@@ -8,8 +8,8 @@
         :root {
             --bg-color: #080808;
             --text-main: #e0e0e0;
-            --text-dim: #6b6b6b; /* Darker base text */
-            --text-bright: #ffffff; /* Fully bright on hover */
+            --text-dim: #6b6b6b;
+            --text-bright: #ffffff;
             --neon-accent: #00ffd5;
             --section-hover-bg: rgba(255, 255, 255, 0.04);
         }
@@ -43,7 +43,7 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: 10vh 2rem 50vh 2rem; /* Added bottom padding so the last item can reach the center */
             position: relative;
             z-index: 1;
         }
@@ -109,14 +109,28 @@
             margin-top: 1rem;
         }
 
-        /* --- New Interactive Section & Sentence Styles --- */
+        /* --- Scroll & Hover Effects --- */
         
         .section-block {
             margin-bottom: 2rem;
             padding: 2rem;
             border-radius: 12px;
             background: transparent;
-            transition: background 0.4s ease, box-shadow 0.4s ease;
+            
+            /* Out-of-focus states (Upper and Lower) */
+            opacity: 0.2;
+            filter: blur(4px);
+            transform: scale(0.95);
+            
+            /* Transition for smooth fading and hovering */
+            transition: background 0.4s ease, box-shadow 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
+        }
+
+        /* In-focus state (Center) triggered by JavaScript */
+        .section-block.in-focus {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1);
         }
 
         .section-block:hover {
@@ -131,7 +145,6 @@
             transition: color 0.2s ease, text-shadow 0.2s ease;
         }
 
-        /* When hovering exactly over this sentence/bullet point */
         .interactive-line:hover {
             color: var(--text-bright);
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
@@ -299,19 +312,41 @@
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousemove', (e) => {
-            // Use requestAnimationFrame for smoother performance
             requestAnimationFrame(() => {
                 cursorGlow.style.left = e.clientX + 'px';
                 cursorGlow.style.top = e.clientY + 'px';
             });
         });
 
-        // Hide glow when mouse leaves the window
         document.addEventListener('mouseout', () => {
             cursorGlow.style.opacity = '0';
         });
         document.addEventListener('mouseover', () => {
             cursorGlow.style.opacity = '1';
+        });
+
+        // Scroll Focus Effect using IntersectionObserver
+        const observerOptions = {
+            root: null, // use the viewport
+            rootMargin: '-25% 0px -25% 0px', // Creates a horizontal band in the middle 50% of the screen
+            threshold: 0 // Trigger as soon as the element crosses the margin boundaries
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Element is in the center zone
+                    entry.target.classList.add('in-focus');
+                } else {
+                    // Element is above or below the center zone
+                    entry.target.classList.remove('in-focus');
+                }
+            });
+        }, observerOptions);
+
+        // Target all section blocks including the header
+        document.querySelectorAll('.section-block').forEach((section) => {
+            observer.observe(section);
         });
     </script>
 </body>
