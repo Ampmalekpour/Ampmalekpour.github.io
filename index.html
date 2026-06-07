@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armin Malekpour | Computer Vision Developer</title>
+    <style>
+        :root {
+            --bg-color: #080808;
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --neon-accent: #00ffd5;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* Cursor Light Effect */
+        #cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, rgba(0, 0, 0, 0) 50%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            margin-bottom: 4rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin: 0 0 1rem 0;
+            color: var(--neon-accent);
+            text-shadow: 0 0 8px rgba(0, 255, 213, 0.4);
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        p, li {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        ul {
+            padding-left: 1.2rem;
+        }
+
+        a {
+            color: var(--neon-accent);
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+
+        a:hover {
+            text-shadow: 0 0 10px rgba(0, 255, 213, 0.8);
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .section-block {
+            margin-bottom: 3rem;
+        }
+
+        .job-title {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .job-meta {
+            font-size: 0.9rem;
+            color: var(--neon-accent);
+            margin-bottom: 1rem;
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-tag {
+            background: rgba(0, 255, 213, 0.05);
+            border: 1px solid rgba(0, 255, 213, 0.2);
+            color: var(--neon-accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor-glow"></div>
+
+    <div class="container">
+        <header>
+            <h1>Armin Malekpour</h1>
+            <h2>Computer Vision & Deep Learning Developer</h2>
+            <div class="contact-links">
+                <a href="https://github.com/Ampmalekpour" target="_blank">GitHub</a>
+                <a href="mailto:amp.malekpour@gmail.com">amp.malekpour@gmail.com</a>
+            </div>
+        </header>
+
+        <section class="section-block">
+            <h3>Experience</h3>
+            <div>
+                <div class="job-title">Eyerik Intelligent Processing</div>
+                <div class="job-meta">Computer Vision & Deep Learning Developer | Sep 2022 - Present</div>
+                <ul>
+                    <li>Developed an application to reconstruct 3D head representations and simulate Hyaluronic Acid Filler injection using Gaussian Splatting.</li>
+                    <li>Designed an end-to-end pipeline for data labeling, training, detection, tracking, classification, and OCR for production lines.</li>
+                    <li>Created a facial beauty analysis software based on facial soft tissue landmark detection.</li>
+                    <li>Optimized detection and recognition pipelines through batch processing and model conversion to ONNX and TensorRT for real-time multi-camera performance.</li>
+                    <li>Improved ByteTracker by incorporating yaw direction and histograms with no computational cost.</li>
+                    <li>Developed a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section-block">
+            <h3>Technical Skills</h3>
+            <div class="skills-grid">
+                <span class="skill-tag">Python</span>
+                <span class="skill-tag">C++</span>
+                <span class="skill-tag">Torch</span>
+                <span class="skill-tag">TensorFlow</span>
+                <span class="skill-tag">Transformer Models</span>
+                <span class="skill-tag">Ultralytics</span>
+                <span class="skill-tag">Mediapipe</span>
+                <span class="skill-tag">MNE & Braindecode</span>
+                <span class="skill-tag">3D Data (VTK, CGAL)</span>
+                <span class="skill-tag">Docker</span>
+            </div>
+        </section>
+
+        <section class="section-block">
+            <h3>Education</h3>
+            <ul>
+                <li><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> - Malek Ashtar University of Technology (GPA: 15.37/20)</li>
+                <li><strong>B.Sc. in Biomedical Engineering</strong> - Hamedan University of Technology (GPA: 15/20)</li>
+                <li><strong>Language:</strong> English C2 Proficient (IELTS Academic 8.5)</li>
+            </ul>
+        </section>
+
+        <section class="section-block">
+            <h3>Selected Research & Publications</h3>
+            <ul>
+                <li>"Neuro-Grounding Deep Learning in Motor Imagery: Validating Model Saliency Against Event-Related Desynchronization for BCI channel reduction" (In Preparation)</li>
+                <li>"A new approach for Hyaluronic Acid Filler Injection simulation" (In Preparation)</li>
+                <li>Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG.</li>
+                <li>Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG.</li>
+            </ul>
+        </section>
+    </div>
+
+    <script>
+        // Interactive cursor glow effect
+        const cursorGlow = document.getElementById('cursor-glow');
+        
+        document.addEventListener('mousemove', (e) => {
+            // Use requestAnimationFrame for smoother performance
+            requestAnimationFrame(() => {
+                cursorGlow.style.left = e.clientX + 'px';
+                cursorGlow.style.top = e.clientY + 'px';
+            });
+        });
+
+        // Hide glow when mouse leaves the window
+        document.addEventListener('mouseout', () => {
+            cursorGlow.style.opacity = '0';
+        });
+        document.addEventListener('mouseover', () => {
+            cursorGlow.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>
