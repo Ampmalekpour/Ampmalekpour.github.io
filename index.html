@@ -8,8 +8,10 @@
         :root {
             --bg-color: #080808;
             --text-main: #e0e0e0;
-            --text-muted: #888888;
+            --text-dim: #6b6b6b; /* Darker base text */
+            --text-bright: #ffffff; /* Fully bright on hover */
             --neon-accent: #00ffd5;
+            --section-hover-bg: rgba(255, 255, 255, 0.04);
         }
 
         body {
@@ -39,7 +41,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 4rem 2rem;
             position: relative;
@@ -47,9 +49,9 @@
         }
 
         header {
-            margin-bottom: 4rem;
+            margin-bottom: 3rem;
+            padding: 2rem;
             border-bottom: 1px solid #222;
-            padding-bottom: 2rem;
         }
 
         h1 {
@@ -71,65 +73,98 @@
 
         h3 {
             font-size: 1.5rem;
-            margin: 2rem 0 1rem 0;
+            margin: 0 0 1.5rem 0;
             font-weight: 600;
             color: var(--text-main);
+            border-left: 3px solid var(--neon-accent);
+            padding-left: 10px;
         }
-
-        p, li {
-            color: var(--text-muted);
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
+        
+        h4 {
+            font-size: 1.1rem;
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--text-main);
         }
 
         ul {
             padding-left: 1.2rem;
+            margin-top: 0.5rem;
         }
 
         a {
             color: var(--neon-accent);
             text-decoration: none;
-            transition: text-shadow 0.3s ease;
+            transition: text-shadow 0.3s ease, color 0.3s ease;
         }
 
         a:hover {
+            color: var(--text-bright);
             text-shadow: 0 0 10px rgba(0, 255, 213, 0.8);
         }
 
         .contact-links {
             display: flex;
+            flex-wrap: wrap;
             gap: 1.5rem;
             margin-top: 1rem;
         }
 
+        /* --- New Interactive Section & Sentence Styles --- */
+        
         .section-block {
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 12px;
+            background: transparent;
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .section-block:hover {
+            background: var(--section-hover-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .interactive-line {
+            color: var(--text-dim);
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+        }
+
+        /* When hovering exactly over this sentence/bullet point */
+        .interactive-line:hover {
+            color: var(--text-bright);
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
         }
 
         .job-title {
             color: var(--text-main);
             font-weight: 600;
-        }
-
-        .job-meta {
-            font-size: 0.9rem;
-            color: var(--neon-accent);
-            margin-bottom: 1rem;
+            margin-top: 1rem;
         }
 
         .skills-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.6rem;
+            margin-top: 1rem;
         }
 
         .skill-tag {
-            background: rgba(0, 255, 213, 0.05);
+            background: rgba(0, 255, 213, 0.02);
             border: 1px solid rgba(0, 255, 213, 0.2);
-            color: var(--neon-accent);
-            padding: 0.3rem 0.8rem;
+            color: var(--text-dim);
+            padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            color: var(--text-bright);
+            background: rgba(0, 255, 213, 0.1);
+            border-color: var(--neon-accent);
+            box-shadow: 0 0 8px rgba(0, 255, 213, 0.3);
         }
     </style>
 </head>
@@ -138,65 +173,125 @@
     <div id="cursor-glow"></div>
 
     <div class="container">
-        <header>
+        <header class="section-block">
             <h1>Armin Malekpour</h1>
-            <h2>Computer Vision & Deep Learning Developer</h2>
+            <h2>Computer Vision Developer</h2>
             <div class="contact-links">
-                <a href="https://github.com/Ampmalekpour" target="_blank">GitHub</a>
-                <a href="mailto:amp.malekpour@gmail.com">amp.malekpour@gmail.com</a>
+                <a href="mailto:amp.malekpour@gmail.com" class="interactive-line">amp.malekpour@gmail.com</a>
+                <span class="interactive-line">|</span>
+                <span class="interactive-line">0098-9378945291</span>
+                <span class="interactive-line">|</span>
+                <span class="interactive-line">0098-9135717899</span>
             </div>
         </header>
 
         <section class="section-block">
-            <h3>Experience</h3>
-            <div>
-                <div class="job-title">Eyerik Intelligent Processing</div>
-                <div class="job-meta">Computer Vision & Deep Learning Developer | Sep 2022 - Present</div>
-                <ul>
-                    <li>Developed an application to reconstruct 3D head representations and simulate Hyaluronic Acid Filler injection using Gaussian Splatting.</li>
-                    <li>Designed an end-to-end pipeline for data labeling, training, detection, tracking, classification, and OCR for production lines.</li>
-                    <li>Created a facial beauty analysis software based on facial soft tissue landmark detection.</li>
-                    <li>Optimized detection and recognition pipelines through batch processing and model conversion to ONNX and TensorRT for real-time multi-camera performance.</li>
-                    <li>Improved ByteTracker by incorporating yaw direction and histograms with no computational cost.</li>
-                    <li>Developed a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM.</li>
-                </ul>
-            </div>
-        </section>
-
-        <section class="section-block">
-            <h3>Technical Skills</h3>
-            <div class="skills-grid">
-                <span class="skill-tag">Python</span>
-                <span class="skill-tag">C++</span>
-                <span class="skill-tag">Torch</span>
-                <span class="skill-tag">TensorFlow</span>
-                <span class="skill-tag">Transformer Models</span>
-                <span class="skill-tag">Ultralytics</span>
-                <span class="skill-tag">Mediapipe</span>
-                <span class="skill-tag">MNE & Braindecode</span>
-                <span class="skill-tag">3D Data (VTK, CGAL)</span>
-                <span class="skill-tag">Docker</span>
-            </div>
+            <h3>Professional Experience</h3>
+            <div class="job-title interactive-line">Computer Vision and Deep Learning Developer | Sep 2022 - Present</div>
+            <div class="interactive-line" style="color: var(--neon-accent); font-size: 0.9rem;">Eyerik Intelligent Processing</div>
+            <ul>
+                <li class="interactive-line">Development and Design of an application to reconstruct 3D head representations and simulation of Hyaluronic Acid Filler injection using Gaussian Splatting</li>
+                <li class="interactive-line">Development of a fully end-to-end pipeline for data labeling, training, detection, tracking, classification and OCR for easy deployment in production lines.</li>
+                <li class="interactive-line">Development of a brand recognition and label checking pipeline to monitor the production line of SNOWA company.</li>
+                <li class="interactive-line">Design and development of a facial beauty analysis software based on facial soft tissue landmark detection</li>
+                <li class="interactive-line">Development of License Plate Detection and Recognition pipeline</li>
+                <li class="interactive-line">Design and development of Face Detection and Recognition pipeline and training landmark-aware detector model and robust recognition model</li>
+                <li class="interactive-line">Optimization of detection and recognition pipelines through batch processing and model conversion to ONNX and TensorRT for multi-camera real-time performance</li>
+                <li class="interactive-line">Improving ByteTracker by incorporating yaw direction and histogram, with no computational cost</li>
+                <li class="interactive-line">Design and development of a 3D data manipulation software using QT, VTK, Vespa, CGAL</li>
+                <li class="interactive-line">Design and development of a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM to segment the gaze target</li>
+                <li class="interactive-line">Developing a framework to compare aerial radar and optical images of regions through SWIN based image transformers</li>
+                <li class="interactive-line">Developing of an automated image annotator for face data, for training deep learning model</li>
+            </ul>
         </section>
 
         <section class="section-block">
             <h3>Education</h3>
             <ul>
-                <li><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> - Malek Ashtar University of Technology (GPA: 15.37/20)</li>
-                <li><strong>B.Sc. in Biomedical Engineering</strong> - Hamedan University of Technology (GPA: 15/20)</li>
-                <li><strong>Language:</strong> English C2 Proficient (IELTS Academic 8.5)</li>
+                <li class="interactive-line"><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> | Sep 2016 - February 2020 | Malek Ashtar University of Technology (GPA: 15.37/20)</li>
+                <li class="interactive-line"><strong>B.Sc. in Biomedical Engineering</strong> | Sep 2012 - August 2016 | Hamedan University of Technology (GPA: 15/20)</li>
             </ul>
         </section>
 
         <section class="section-block">
-            <h3>Selected Research & Publications</h3>
+            <h3>Research Experience</h3>
+            
+            <h4>Independent Research</h4>
             <ul>
-                <li>"Neuro-Grounding Deep Learning in Motor Imagery: Validating Model Saliency Against Event-Related Desynchronization for BCI channel reduction" (In Preparation)</li>
-                <li>"A new approach for Hyaluronic Acid Filler Injection simulation" (In Preparation)</li>
-                <li>Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG.</li>
-                <li>Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG.</li>
+                <li class="interactive-line">Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG</li>
+                <li class="interactive-line">Exploring facial muscle movements artifacts in ICA in EEG</li>
+                <li class="interactive-line">EEG Functional and Effective connectivity analysis in time and frequency domain</li>
+                <li class="interactive-line">Proposing a statistical filter on feature maps of face images to prevent false recognition in ArcFace model</li>
+                <li class="interactive-line">Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG</li>
+                <li class="interactive-line">Alignment of eye blinks derived from video, with EEG</li>
+            </ul>
+
+            <h4>Graduate Experience</h4>
+            <ul>
+                <li class="interactive-line">Simulation of Wireless Token Ring Protocol in Omnet++</li>
+                <li class="interactive-line">Link Duration Estimation Technique for WTRP</li>
+                <li class="interactive-line">MAC Protocols of Mobile Ad hoc Networks seminar</li>
+            </ul>
+
+            <h4>Undergraduate Experience</h4>
+            <ul>
+                <li class="interactive-line">Simulation of a 3d image reconstruction technique in MATLAB</li>
+                <li class="interactive-line">Simulation of an Edge Detection Algorithm for Flame Image Processing</li>
+                <li class="interactive-line">Edge Detection using Mamdani Fuzzy Model</li>
+                <li class="interactive-line">Neuro-Prosthetic Implants seminar presentation</li>
             </ul>
         </section>
+
+        <section class="section-block">
+            <h3>Publications (In Preparation)</h3>
+            <ul>
+                <li class="interactive-line">"Neuro-Grounding Deep Learning in Motor Imagery: Validating Model Saliency Against Event-Related Desynchronization for BCI channel reduction"</li>
+                <li class="interactive-line">"A new approach for Hyaluronic Acid Filler Injection simulation"</li>
+            </ul>
+        </section>
+
+        <section class="section-block">
+            <h3>Technical Strengths</h3>
+            <ul>
+                <li class="interactive-line"><strong>Core Competencies:</strong> Prompt Engineering</li>
+                <li class="interactive-line"><strong>Programming:</strong> Python, C++, Matlab</li>
+                <li class="interactive-line"><strong>Libraries and Frameworks:</strong> Torch, Tensorflow, Keras, MNE, Braindecode, CLIP, SAM, VTK, Vespa, CGAL, DeepFace, Mediapipe, Ultralytics, Docker</li>
+                <li class="interactive-line"><strong>Image Transformers:</strong> ViT in CLIP, ArcFace in DeepFace, SiGlip</li>
+                <li class="interactive-line"><strong>3D Data:</strong> VTK, Vespa, CGAL</li>
+            </ul>
+        </section>
+
+        <section class="section-block">
+            <h3>Research Interests</h3>
+            <div class="skills-grid">
+                <span class="skill-tag">Neuroscience</span>
+                <span class="skill-tag">Brain-Computer Interface</span>
+                <span class="skill-tag">Deep-Learning based Computer Vision</span>
+                <span class="skill-tag">Transformer models</span>
+                <span class="skill-tag">Attention Mechanism</span>
+                <span class="skill-tag">Affective Computing</span>
+                <span class="skill-tag">Face / Facial Analysis</span>
+                <span class="skill-tag">3D Data Processing</span>
+                <span class="skill-tag">Vision Transformers</span>
+                <span class="skill-tag">Motor Imagery</span>
+            </div>
+        </section>
+
+        <section class="section-block">
+            <h3>Language Proficiency</h3>
+            <ul>
+                <li class="interactive-line"><strong>English:</strong> C2 proficient (IELTS Academic 8.5)</li>
+            </ul>
+        </section>
+
+        <section class="section-block">
+            <h3>References / Contact Info</h3>
+            <ul>
+                <li class="interactive-line"><strong>Mrs. Parisa Kamani</strong>, CTO of Eyerik Intelligent Processing | p.kamani@eyerik.com</li>
+                <li class="interactive-line"><strong>Dr. Alireza Fallahi</strong>, Assistant Professor at Hamedan University of Technology | ali.r.fallahi@hut.ac.ir, ali.r.fallahi@gmail.com</li>
+            </ul>
+        </section>
+
     </div>
 
     <script>
