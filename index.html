@@ -11,7 +11,7 @@
             --text-dim: #6b6b6b;
             --text-bright: #ffffff;
             --neon-accent: #00ffd5;
-            --section-hover-bg: rgba(255, 255, 255, 0.04);
+            --section-hover-bg: rgba(255, 255, 255, 0.02);
         }
 
         body {
@@ -23,6 +23,17 @@
             line-height: 1.6;
             overflow-x: hidden;
             cursor: default;
+        }
+
+        /* Background Canvas */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
         }
 
         /* Cursor Light Effect */
@@ -38,12 +49,13 @@
             pointer-events: none;
             z-index: 9999;
             transition: opacity 0.3s ease;
+            opacity: 0;
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 10vh 2rem 50vh 2rem; /* Added bottom padding so the last item can reach the center */
+            padding: 10vh 2rem 50vh 2rem;
             position: relative;
             z-index: 1;
         }
@@ -69,6 +81,7 @@
             font-weight: 500;
             letter-spacing: 1px;
             text-transform: uppercase;
+            font-family: monospace; /* Gives the glitch text a more authentic look */
         }
 
         h3 {
@@ -114,23 +127,53 @@
         .section-block {
             margin-bottom: 2rem;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 4px; /* Slightly sharper for CV motif */
             background: transparent;
+            position: relative; /* Needed for bounding box pseudo-elements */
             
-            /* Out-of-focus states (Upper and Lower) */
+            /* Out-of-focus states */
             opacity: 0.2;
             filter: blur(4px);
             transform: scale(0.95);
             
-            /* Transition for smooth fading and hovering */
             transition: background 0.4s ease, box-shadow 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
         }
 
-        /* In-focus state (Center) triggered by JavaScript */
+        /* Dynamic Corners (Bounding Box effect) */
+        .section-block::before, .section-block::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid transparent;
+            transition: all 0.5s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+        /* Top-Left Corner */
+        .section-block::before {
+            top: 0; left: 0;
+            border-top-color: var(--neon-accent);
+            border-left-color: var(--neon-accent);
+        }
+        /* Bottom-Right Corner */
+        .section-block::after {
+            bottom: 0; right: 0;
+            border-bottom-color: var(--neon-accent);
+            border-right-color: var(--neon-accent);
+        }
+
+        /* In-focus state */
         .section-block.in-focus {
             opacity: 1;
             filter: blur(0);
             transform: scale(1);
+        }
+
+        .section-block.in-focus::before, .section-block.in-focus::after {
+            opacity: 0.8;
+            width: 25px;
+            height: 25px;
         }
 
         .section-block:hover {
@@ -170,25 +213,58 @@
             padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.85rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Saliency Map / Heatmap hover effect */
+        .skill-tag::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(45deg, rgba(0, 255, 213, 0.3), rgba(122, 0, 255, 0.3));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
         }
 
         .skill-tag:hover {
             color: var(--text-bright);
-            background: rgba(0, 255, 213, 0.1);
             border-color: var(--neon-accent);
-            box-shadow: 0 0 8px rgba(0, 255, 213, 0.3);
+            box-shadow: 0 0 12px rgba(0, 255, 213, 0.4);
+        }
+
+        .skill-tag:hover::before {
+            opacity: 1;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-accent);
         }
     </style>
 </head>
 <body>
 
+    <canvas id="neural-canvas"></canvas>
     <div id="cursor-glow"></div>
 
     <div class="container">
         <header class="section-block">
             <h1>Armin Malekpour</h1>
-            <h2>Computer Vision Developer</h2>
+            <h2 id="scramble-target" data-value="Computer Vision Developer">Computer Vision Developer</h2>
             <div class="contact-links">
                 <a href="mailto:amp.malekpour@gmail.com" class="interactive-line">amp.malekpour@gmail.com</a>
                 <span class="interactive-line">|</span>
@@ -308,10 +384,92 @@
     </div>
 
     <script>
-        // Interactive cursor glow effect
+        // --- 1. Generative Neural Network Background ---
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null, radius: 150 };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 1.5 + 0.5;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.hypot(dx, dy);
+                if (distance < mouse.radius) {
+                    const force = (mouse.radius - distance) / mouse.radius;
+                    this.x -= (dx / distance) * force * 0.5;
+                    this.y -= (dy / distance) * force * 0.5;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 255, 213, 0.15)';
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 25000));
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+        initParticles();
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                for (let j = i + 1; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.hypot(dx, dy);
+                    
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 213, ${0.05 * (1 - dist/120)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // --- 2. Interactive Cursor Glow & Tracking ---
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
             requestAnimationFrame(() => {
                 cursorGlow.style.left = e.clientX + 'px';
                 cursorGlow.style.top = e.clientY + 'px';
@@ -320,34 +478,63 @@
 
         document.addEventListener('mouseout', () => {
             cursorGlow.style.opacity = '0';
+            mouse.x = null;
+            mouse.y = null;
         });
         document.addEventListener('mouseover', () => {
             cursorGlow.style.opacity = '1';
         });
 
-        // Scroll Focus Effect using IntersectionObserver
+        // --- 3. Scroll Focus Effect using IntersectionObserver ---
         const observerOptions = {
-            root: null, // use the viewport
-            rootMargin: '-25% 0px -25% 0px', // Creates a horizontal band in the middle 50% of the screen
-            threshold: 0 // Trigger as soon as the element crosses the margin boundaries
+            root: null, 
+            rootMargin: '-25% 0px -25% 0px', 
+            threshold: 0 
         };
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // Element is in the center zone
                     entry.target.classList.add('in-focus');
                 } else {
-                    // Element is above or below the center zone
                     entry.target.classList.remove('in-focus');
                 }
             });
         }, observerOptions);
 
-        // Target all section blocks including the header
         document.querySelectorAll('.section-block').forEach((section) => {
             observer.observe(section);
         });
+
+        // --- 4. Matrix/Glitch Text Scramble Effect ---
+        const letters = "ABCDEFGHIJKLMNOUPRSTUVWXYZ0123456789X_//--";
+        const targetText = document.getElementById("scramble-target");
+        let interval = null;
+
+        function scrambleEffect() {
+            let iteration = 0;
+            clearInterval(interval);
+            
+            interval = setInterval(() => {
+                targetText.innerText = targetText.innerText
+                    .split("")
+                    .map((letter, index) => {
+                        if(index < iteration) {
+                            return targetText.dataset.value[index];
+                        }
+                        if (targetText.dataset.value[index] === " ") return " ";
+                        return letters[Math.floor(Math.random() * letters.length)];
+                    })
+                    .join("");
+                
+                if(iteration >= targetText.dataset.value.length){ 
+                    clearInterval(interval);
+                }
+                iteration += 1 / 3;
+            }, 30);
+        }
+        
+        window.addEventListener('DOMContentLoaded', scrambleEffect);
     </script>
 </body>
 </html>
