@@ -36,18 +36,6 @@
             pointer-events: none;
         }
 
-        /* Signal Wave Canvas */
-        #wave-canvas {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100vw;
-            height: 150px;
-            z-index: 0;
-            pointer-events: none;
-            opacity: 0.8;
-        }
-
         /* Cursor Light Effect */
         #cursor-glow {
             position: fixed;
@@ -266,7 +254,6 @@
 <body>
 
     <canvas id="neural-canvas"></canvas>
-    <canvas id="wave-canvas"></canvas>
     <div id="cursor-glow"></div>
 
     <div class="container">
@@ -398,7 +385,6 @@
         let mouseY = 0;
         let targetMouseX = 0;
         let targetMouseY = 0;
-        let trueMouseY = 0;
 
         function resize() {
             width = window.innerWidth;
@@ -406,18 +392,14 @@
             centerX = width / 2;
             centerY = height / 2;
             
-            // Sync both canvases
+            // Sync neural canvas
             const neuralCanvas = document.getElementById('neural-canvas');
             neuralCanvas.width = width;
             neuralCanvas.height = height;
-            
-            const waveCanvas = document.getElementById('wave-canvas');
-            waveCanvas.width = width;
-            waveCanvas.height = 150; // Fixed small height for signals
         }
         window.addEventListener('resize', resize);
         
-        // --- 1. 3D Gaussian Splats + Neural Network Canvas ---
+        // --- 3D Gaussian Splats + Neural Network Canvas ---
         const neuralCanvas = document.getElementById('neural-canvas');
         const ctx = neuralCanvas.getContext('2d');
         
@@ -470,50 +452,6 @@
                 y: centerY + py * scale,
                 scale: scale
             };
-        }
-
-        // --- 2. Interactive Signal Waves (EEG Style) ---
-        const waveCanvas = document.getElementById('wave-canvas');
-        const waveCtx = waveCanvas.getContext('2d');
-        let waveTime = 0;
-
-        const signals = [
-            { length: 0.005, baseAmp: 12, color: 'rgba(0, 255, 213, 0.7)', speed: 1.2, offset: 0 },
-            { length: 0.008, baseAmp: 8, color: 'rgba(122, 0, 255, 0.5)', speed: 1.5, offset: Math.PI },
-            { length: 0.003, baseAmp: 15, color: 'rgba(0, 150, 255, 0.4)', speed: 0.9, offset: Math.PI / 2 }
-        ];
-
-        function animateWaves() {
-            waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
-            waveTime += 0.03;
-
-            const realMouseX = targetMouseX + centerX; // Mouse X relative to screen
-
-            signals.forEach(signal => {
-                waveCtx.beginPath();
-                
-                for (let i = 0; i <= waveCanvas.width; i += 3) {
-                    // Calculate interactive amplitude bump based on proximity to mouse X
-                    const distToMouseX = Math.abs(i - realMouseX);
-                    // The closer the mouse X, the higher the amplitude
-                    const interactFactor = Math.max(0, 1 - (distToMouseX / 350)); 
-                    // Use trueMouseY to scale the interaction height
-                    const yForce = (trueMouseY / height) * 30; 
-                    
-                    const totalAmp = signal.baseAmp + (interactFactor * yForce);
-                    
-                    const y = (waveCanvas.height / 2) + Math.sin(i * signal.length + waveTime * signal.speed + signal.offset) * totalAmp;
-                    
-                    if (i === 0) waveCtx.moveTo(i, y);
-                    else waveCtx.lineTo(i, y);
-                }
-                
-                waveCtx.strokeStyle = signal.color;
-                waveCtx.lineWidth = 1.5;
-                waveCtx.lineCap = 'round';
-                waveCtx.lineJoin = 'round';
-                waveCtx.stroke();
-            });
         }
 
         // --- Main Animation Loop ---
@@ -591,19 +529,15 @@
                 ctx.fill();
             }
 
-            // Wave Canvas Render
-            animateWaves();
-
             requestAnimationFrame(animate);
         }
 
-        // --- 3. Interactive Cursor Glow & Tracking ---
+        // --- Interactive Cursor Glow & Tracking ---
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousemove', (e) => {
             targetMouseX = e.clientX - centerX;
             targetMouseY = e.clientY - centerY;
-            trueMouseY = e.clientY;
 
             requestAnimationFrame(() => {
                 cursorGlow.style.left = e.clientX + 'px';
@@ -615,13 +549,12 @@
             cursorGlow.style.opacity = '0';
             targetMouseX = 0;
             targetMouseY = 0;
-            trueMouseY = 0;
         });
         document.addEventListener('mouseover', () => {
             cursorGlow.style.opacity = '1';
         });
 
-        // --- 4. Scroll Focus Effect using IntersectionObserver ---
+        // --- Scroll Focus Effect using IntersectionObserver ---
         const observerOptions = {
             root: null, 
             rootMargin: '-20% 0px -20% 0px', 
