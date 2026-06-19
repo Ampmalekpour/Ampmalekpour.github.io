@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saliency Map / ERD Ripple Background</title>
+    <title>Topomap & Functional Connectivity</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #050608; /* Deep resting-state dark */
-            overflow: hidden; /* Prevents scrollbars from the canvas */
-            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #07090f; /* Deep, tech-minimalist dark */
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        /* The canvas is fixed to the background */
-        #saliency-canvas {
+        #eeg-canvas {
             display: block;
             position: absolute;
             top: 0;
@@ -24,179 +23,258 @@
             z-index: 1;
         }
 
-        /* Example of how your portfolio content sits above the canvas */
         #portfolio-layer {
             position: relative;
             z-index: 2;
-            color: rgba(255, 255, 255, 0.9);
-            pointer-events: none; /* Allows mouse interactions to pass through to the canvas */
+            color: rgba(255, 255, 255, 0.85);
+            pointer-events: none; 
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
+            text-align: center;
         }
 
         h1 {
-            font-weight: 300;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+            font-size: 2.2rem;
+            text-transform: uppercase;
         }
 
         p {
-            color: rgba(255, 255, 255, 0.5);
+            color: #00f0ff; /* Subtle cyan accent */
             font-family: monospace;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="saliency-canvas"></canvas>
+    <canvas id="eeg-canvas"></canvas>
 
     <div id="portfolio-layer">
-        <h1>INTERPRETABILITY LAYER</h1>
-        <p>Move cursor to simulate attention mechanism & ERD</p>
+        <h1>Pattern Architecture</h1>
+        <p>Real-time Functional Connectivity & Topographical Mapping</p>
     </div>
 
     <script>
-        const canvas = document.getElementById('saliency-canvas');
+        const canvas = document.getElementById('eeg-canvas');
         const ctx = canvas.getContext('2d');
 
         let width, height;
-        let nodes = [];
-        
-        // --- TWEAKABLE HYPERPARAMETERS ---
-        const spacing = 35;              // Density of the topographical grid
-        const attentionRadius = 180;     // How far the cursor's "saliency" reaches
-        const activationRate = 0.15;     // How fast the heat map spikes
-        const erdDecayRate = 0.93;       // How fast the signal attenuates back to baseline (lower = faster)
-        // ---------------------------------
-
+        let eegNodes = [];
         let mouse = { x: -1000, y: -1000 };
 
-        // Track the "attention mechanism" (cursor)
+        // --- HYPERPARAMETERS ---
+        const activationRadius = 150; 
+        const connectivityThreshold = 0.15; // Minimum activation to draw a line
+        const baseColor = 'rgba(42, 59, 92, 0.4)'; // Faint resting state
+        const activeColor = '#00f0ff'; // Vibrant cyan for activation
+        // -----------------------
+
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
         });
 
-        // Remove focus when leaving the window
         window.addEventListener('mouseleave', () => {
             mouse.x = -1000;
             mouse.y = -1000;
         });
 
-        // Handle window resizing smoothly
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            initGrid();
+            initTopomap();
         }
         window.addEventListener('resize', resize);
 
-        class NeuralNode {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.baseX = x;
-                this.baseY = y;
-                this.heat = 0; // Represents saliency weight / ERD activation [0 to 1]
+        class EEGChannel {
+            constructor(cx, cy, radius, angle, label) {
+                // Polar to Cartesian conversion (offset by -90deg so nose points UP)
+                this.x = cx + radius * Math.cos(angle - Math.PI / 2);
+                this.y = cy + radius * Math.sin(angle - Math.PI / 2);
+                this.label = label;
+                this.activation = 0;
+                
+                // Pre-assign a few random "long-range" peers for cross-hemisphere connectivity
+                this.peers = [];
             }
 
             update() {
-                // Calculate distance to the focal point
-                const dx = mouse.x - this.baseX;
-                const dy = mouse.y - this.baseY;
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Spike heat if within the attention radius
-                if (distance < attentionRadius) {
-                    const activation = 1 - (distance / attentionRadius);
-                    this.heat += activation * activationRate; 
-                    if (this.heat > 1) this.heat = 1; // Cap at max activation
+                // Calculate local field power / activation
+                if (distance < activationRadius) {
+                    // Smooth gaussian-like falloff
+                    let rawActivation = 1 - (distance / activationRadius);
+                    this.activation += (rawActivation - this.activation) * 0.1; 
+                } else {
+                    // Decay back to baseline
+                    this.activation *= 0.90; 
                 }
-
-                // Temporal decay (simulating signal returning to baseline)
-                this.heat *= erdDecayRate;
-
-                // Subtle topographical displacement based on activation weight
-                this.x = this.baseX - (dx * this.heat * 0.15);
-                this.y = this.baseY - (dy * this.heat * 0.15);
             }
 
-            draw() {
-                // Baseline resting state: faint, deep cyan
-                let r = 12;
-                let g = 28;
-                let b = 45;
-                let alpha = 0.2;
-                let size = 1.5;
-
-                // If activated, interpolate to vibrant orange/yellow saliency peak
-                if (this.heat > 0.01) {
-                    r = Math.floor(12 + (243 * this.heat));  // Shifts to 255
-                    g = Math.floor(28 + (172 * this.heat));  // Shifts to 200
-                    b = Math.floor(45 - (45 * this.heat));   // Shifts to 0
-                    alpha = 0.2 + (this.heat * 0.8);
-                    size = 1.5 + (this.heat * 3.5);
-                }
+            drawNode() {
+                // Interpolate colors based on activation
+                const alpha = 0.2 + (this.activation * 0.8);
+                const size = 3 + (this.activation * 2);
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                
+                if (this.activation > 0.05) {
+                    ctx.fillStyle = activeColor;
+                    ctx.shadowBlur = 10 * this.activation;
+                    ctx.shadowColor = activeColor;
+                } else {
+                    ctx.fillStyle = '#111520';
+                    ctx.shadowBlur = 0;
+                }
+                
                 ctx.fill();
+                
+                // Stroke
+                ctx.lineWidth = 1.5;
+                ctx.strokeStyle = this.activation > 0.05 ? activeColor : baseColor;
+                ctx.stroke();
+                ctx.shadowBlur = 0; // reset
             }
         }
 
-        function initGrid() {
-            nodes = [];
-            // Create a grid that slightly overflows the screen to prevent edge clipping
-            for (let x = -spacing; x <= width + spacing; x += spacing) {
-                for (let y = -spacing; y <= height + spacing; y += spacing) {
-                    nodes.push(new NeuralNode(x, y));
+        function initTopomap() {
+            eegNodes = [];
+            const cx = width / 2;
+            const cy = height / 2;
+            const maxR = Math.min(width, height) * 0.35; // Scale to screen
+
+            // Concentric rings to simulate a standard layout (e.g., 10-20 system)
+            const rings = [
+                { r: 0, count: 1 },                 // Cz
+                { r: maxR * 0.33, count: 6 },       // Inner ring
+                { r: maxR * 0.66, count: 12 },      // Middle ring
+                { r: maxR, count: 18 }              // Outer ring
+            ];
+
+            let index = 0;
+            rings.forEach(ring => {
+                for (let i = 0; i < ring.count; i++) {
+                    let angle = (Math.PI * 2 / ring.count) * i;
+                    eegNodes.push(new EEGChannel(cx, cy, ring.r, angle, `CH${index++}`));
                 }
-            }
+            });
+
+            // Assign functional connectivity peers (simulating resting state networks)
+            eegNodes.forEach(node => {
+                // Connect to 2-3 random distant nodes to simulate long-range phase locking
+                let peerCount = Math.floor(Math.random() * 2) + 2;
+                for (let i = 0; i < peerCount; i++) {
+                    let randomPeer = eegNodes[Math.floor(Math.random() * eegNodes.length)];
+                    if (randomPeer !== node && !node.peers.includes(randomPeer)) {
+                        node.peers.push(randomPeer);
+                    }
+                }
+            });
+        }
+
+        function drawHeadShape() {
+            const cx = width / 2;
+            const cy = height / 2;
+            const maxR = Math.min(width, height) * 0.35;
+
+            // Draw abstract nose indicator (triangle at the top)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - maxR - 20);
+            ctx.lineTo(cx - 15, cy - maxR);
+            ctx.lineTo(cx + 15, cy - maxR);
+            ctx.closePath();
+            ctx.strokeStyle = baseColor;
+            ctx.stroke();
+
+            // Draw faint outer boundary of the scalp
+            ctx.beginPath();
+            ctx.arc(cx, cy, maxR + 10, 0, Math.PI * 2);
+            ctx.strokeStyle = baseColor;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 10]);
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+        }
+
+        function drawTopomapGlow() {
+            // Draws a smooth, moving radial gradient under the cursor 
+            // representing interpolated topographical "heat"
+            const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, activationRadius * 1.5);
+            gradient.addColorStop(0, 'rgba(0, 240, 255, 0.08)');
+            gradient.addColorStop(0.5, 'rgba(0, 100, 255, 0.03)');
+            gradient.addColorStop(1, 'rgba(7, 9, 15, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawConnectivity() {
+            ctx.lineWidth = 1;
+            
+            eegNodes.forEach(node => {
+                if (node.activation < connectivityThreshold) return;
+
+                node.peers.forEach(peer => {
+                    // Combine activation of source and target
+                    const coherence = (node.activation + peer.activation) / 2;
+                    
+                    if (coherence > 0.05) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+
+                        // Use a bezier curve through the center to look like internal brain tracts
+                        const cx = width / 2;
+                        const cy = height / 2;
+                        
+                        // Control point pulls the line slightly towards the center
+                        const cpX = (node.x + peer.x) / 2 * 0.6 + cx * 0.4;
+                        const cpY = (node.y + peer.y) / 2 * 0.6 + cy * 0.4;
+
+                        ctx.quadraticCurveTo(cpX, cpY, peer.x, peer.y);
+                        
+                        // Opacity based on coherence strength
+                        ctx.strokeStyle = `rgba(0, 240, 255, ${coherence * 0.6})`;
+                        ctx.stroke();
+                    }
+                });
+            });
         }
 
         function animate() {
-            // Clear frame with a slight trailing effect for smoothness
-            ctx.fillStyle = 'rgba(5, 6, 8, 0.3)';
-            ctx.fillRect(0, 0, width, height);
+            // Clear screen
+            ctx.clearRect(0, 0, width, height);
 
-            // Update physics
-            nodes.forEach(node => node.update());
+            // 1. Draw the smooth interpolated glow
+            if (mouse.x !== -1000) drawTopomapGlow();
 
-            // Draw dynamic connections between highly activated nodes
-            for (let i = 0; i < nodes.length; i++) {
-                if (nodes[i].heat < 0.25) continue; // Only process active regions to save GPU cycles
+            // 2. Draw static head boundaries
+            drawHeadShape();
 
-                for (let j = i + 1; j < nodes.length; j++) {
-                    if (nodes[j].heat < 0.25) continue;
+            // 3. Update physics/activation
+            eegNodes.forEach(node => node.update());
 
-                    const dx = nodes[i].x - nodes[j].x;
-                    const dy = nodes[i].y - nodes[j].y;
-                    const distanceSq = dx * dx + dy * dy;
+            // 4. Draw dynamic network connections
+            drawConnectivity();
 
-                    // If nodes are close enough, draw a connecting neural thread
-                    if (distanceSq < (spacing * 1.8) * (spacing * 1.8)) {
-                        const avgHeat = (nodes[i].heat + nodes[j].heat) / 2;
-                        ctx.beginPath();
-                        ctx.moveTo(nodes[i].x, nodes[i].y);
-                        ctx.lineTo(nodes[j].x, nodes[j].y);
-                        ctx.strokeStyle = `rgba(255, 120, 0, ${avgHeat * 0.6})`;
-                        ctx.lineWidth = avgHeat * 1.5;
-                        ctx.stroke();
-                    }
-                }
-            }
-
-            // Draw the nodes over the connecting lines
-            nodes.forEach(node => node.draw());
+            // 5. Draw the electrodes on top
+            eegNodes.forEach(node => node.drawNode());
 
             requestAnimationFrame(animate);
         }
 
-        // Boot up
+        // Initialize and start loop
         resize();
         animate();
     </script>
