@@ -25,7 +25,7 @@
             cursor: default;
         }
 
-        /* 3D Generative Canvas */
+        /* 2D Generative Water Canvas */
         #neural-canvas {
             position: fixed;
             top: 0;
@@ -36,14 +36,14 @@
             pointer-events: none;
         }
 
-        /* Cursor Light Effect */
+        /* Cursor Light Effect - Updated to match the blue water theme */
         #cursor-glow {
             position: fixed;
             top: 0;
             left: 0;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, rgba(0, 0, 0, 0) 50%);
+            background: radial-gradient(circle, rgba(30, 180, 255, 0.06) 0%, rgba(0, 0, 0, 0) 50%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
@@ -381,10 +381,20 @@
     <script>
         // --- Core Variables ---
         let width, height, centerX, centerY;
-        let mouseX = 0;
-        let mouseY = 0;
-        let targetMouseX = 0;
-        let targetMouseY = 0;
+        let mouseX = -1000;
+        let mouseY = -1000;
+        let time = 0;
+
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // --- Water Particle System ---
+        let particles = [];
+        const spacing = 18; // Distance between particles (density)
+        const mouseRadius = 150; // Interaction radius
+        const interactionForce = 4; // How hard particles are pushed away
+        const springStrength = 0.04; // How fast they return
+        const friction = 0.82; // How fluid/bouncy the movement is
 
         function resize() {
             width = window.innerWidth;
@@ -392,152 +402,107 @@
             centerX = width / 2;
             centerY = height / 2;
             
-            // Sync neural canvas
-            const neuralCanvas = document.getElementById('neural-canvas');
-            neuralCanvas.width = width;
-            neuralCanvas.height = height;
+            canvas.width = width;
+            canvas.height = height;
+            
+            initParticles();
         }
         window.addEventListener('resize', resize);
         
-        // --- 3D Gaussian Splats + Neural Network Canvas ---
-        const neuralCanvas = document.getElementById('neural-canvas');
-        const ctx = neuralCanvas.getContext('2d');
-        
-        const splats = [];
-        const neurons = [];
-        const numSplats = 15;
-        const numNeurons = 100;
-        const focalLength = 400;
+        function initParticles() {
+            particles = [];
+            const cols = Math.floor(width / spacing) + 2;
+            const rows = Math.floor(height / spacing) + 2;
+            const offsetX = (width - cols * spacing) / 2;
+            const offsetY = (height - rows * spacing) / 2;
 
-        const splatColors = [
-            [0, 255, 213], // Neon Cyan
-            [122, 0, 255], // Deep Purple
-            [0, 150, 255]  // Blue
-        ];
-
-        function initNeuralElements() {
-            for (let i = 0; i < numSplats; i++) {
-                const color = splatColors[Math.floor(Math.random() * splatColors.length)];
-                splats.push({
-                    x: (Math.random() - 0.5) * window.innerWidth * 3,
-                    y: (Math.random() - 0.5) * window.innerHeight * 3,
-                    z: Math.random() * 1000 + 200,
-                    radius: Math.random() * 300 + 150,
-                    color: `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.08)`,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5,
-                    vz: (Math.random() - 0.5) * 0.5
-                });
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = i * spacing + offsetX;
+                    const y = j * spacing + offsetY;
+                    particles.push({
+                        x: x,
+                        y: y,
+                        originX: x,
+                        originY: y,
+                        vx: 0,
+                        vy: 0
+                    });
+                }
             }
-
-            for (let i = 0; i < numNeurons; i++) {
-                neurons.push({
-                    x: (Math.random() - 0.5) * window.innerWidth * 2,
-                    y: (Math.random() - 0.5) * window.innerHeight * 2,
-                    z: Math.random() * 600 + 100,
-                    radius: Math.random() * 1.5 + 0.5,
-                    vx: (Math.random() - 0.5) * 0.8,
-                    vy: (Math.random() - 0.5) * 0.8,
-                    vz: (Math.random() - 0.5) * 0.8
-                });
-            }
-        }
-
-        function project3D(x, y, z) {
-            const scale = focalLength / (focalLength + z);
-            const px = x - (mouseX * (z / 1000));
-            const py = y - (mouseY * (z / 1000));
-            return {
-                x: centerX + px * scale,
-                y: centerY + py * scale,
-                scale: scale
-            };
         }
 
         // --- Main Animation Loop ---
         function animate() {
-            // Neural Canvas Render
             ctx.clearRect(0, 0, width, height);
-            
-            mouseX += (targetMouseX - mouseX) * 0.05;
-            mouseY += (targetMouseY - mouseY) * 0.05;
+            time += 0.02; // Advance wave time
 
-            splats.forEach(splat => {
-                splat.x += splat.vx;
-                splat.y += splat.vy;
-                splat.z += splat.vz;
+            // Calculate max distance for edge-fading logic
+            const maxNormDist = Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2));
 
-                if (Math.abs(splat.x) > width * 1.5) splat.vx *= -1;
-                if (Math.abs(splat.y) > height * 1.5) splat.vy *= -1;
-                if (splat.z < 100 || splat.z > 1500) splat.vz *= -1;
+            // Use direct pixel manipulation for fast rendering (avoids slow path drawings)
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
 
-                const proj = project3D(splat.x, splat.y, splat.z);
-                
-                if (proj.scale > 0 && proj.x > -200 && proj.x < width + 200 && proj.y > -200 && proj.y < height + 200) {
-                    const renderRadius = splat.radius * proj.scale;
-                    const gradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, renderRadius);
-                    gradient.addColorStop(0, splat.color);
-                    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                // 1. Calculate interaction with Mouse
+                const dx = mouseX - p.x;
+                const dy = mouseY - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < mouseRadius) {
+                    const force = (mouseRadius - dist) / mouseRadius;
+                    const angle = Math.atan2(dy, dx);
                     
-                    ctx.beginPath();
-                    ctx.arc(proj.x, proj.y, renderRadius, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                }
-            });
-
-            const projectedNeurons = neurons.map(n => {
-                n.x += n.vx;
-                n.y += n.vy;
-                n.z += n.vz;
-
-                if (Math.abs(n.x) > width) n.vx *= -1;
-                if (Math.abs(n.y) > height) n.vy *= -1;
-                if (n.z < 50 || n.z > 800) n.vz *= -1;
-
-                const proj = project3D(n.x, n.y, n.z);
-                return { ...n, projX: proj.x, projY: proj.y, scale: proj.scale };
-            });
-
-            ctx.lineWidth = 0.6;
-            for (let i = 0; i < projectedNeurons.length; i++) {
-                const n1 = projectedNeurons[i];
-                if (n1.scale <= 0) continue;
-
-                for (let j = i + 1; j < projectedNeurons.length; j++) {
-                    const n2 = projectedNeurons[j];
-                    if (n2.scale <= 0) continue;
-
-                    const dx = n1.x - n2.x;
-                    const dy = n1.y - n2.y;
-                    const dz = n1.z - n2.z;
-                    const dist3D = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-                    if (dist3D < 150) {
-                        ctx.beginPath();
-                        ctx.moveTo(n1.projX, n1.projY);
-                        ctx.lineTo(n2.projX, n2.projY);
-                        const alpha = (1 - dist3D / 150) * n1.scale * 0.3;
-                        ctx.strokeStyle = `rgba(0, 255, 213, ${alpha})`;
-                        ctx.stroke();
-                    }
+                    // Push particles away
+                    p.vx -= Math.cos(angle) * force * interactionForce;
+                    p.vy -= Math.sin(angle) * force * interactionForce;
                 }
 
-                ctx.beginPath();
-                ctx.arc(n1.projX, n1.projY, n1.radius * n1.scale * 2, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 255, 213, ${n1.scale * 0.8})`;
-                ctx.fill();
+                // 2. Add gentle fluid wave offset
+                const waveY = Math.sin((p.originX * 0.005) + time) * 8;
+                const waveX = Math.cos((p.originY * 0.005) + time) * 4;
+                
+                const targetX = p.originX + waveX;
+                const targetY = p.originY + waveY;
+
+                // 3. Apply spring physics to return to target position
+                p.vx += (targetX - p.x) * springStrength;
+                p.vy += (targetY - p.y) * springStrength;
+
+                // 4. Apply friction
+                p.vx *= friction;
+                p.vy *= friction;
+
+                // Update position
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // 5. Calculate fade to margins
+                // Center is brightest, fades to 0 at the window edges
+                const distFromCenter = Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2));
+                let opacity = 1 - (distFromCenter / (maxNormDist * 0.95)); // 0.95 tightens the margin fade
+                
+                // Square the opacity for a smoother, softer edge drop-off
+                opacity = Math.max(0, Math.min(1, opacity));
+                opacity = opacity * opacity; 
+
+                // 6. Draw particle
+                if (opacity > 0.01) {
+                    // Rich fluid blue color
+                    ctx.fillStyle = `rgba(30, 160, 255, ${opacity * 0.6})`;
+                    ctx.fillRect(p.x, p.y, 2.5, 2.5); // Using fillRect is highly optimized for thousands of particles
+                }
             }
 
             requestAnimationFrame(animate);
         }
 
-        // --- Interactive Cursor Glow & Tracking ---
+        // --- Interactive Cursor Tracking ---
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousemove', (e) => {
-            targetMouseX = e.clientX - centerX;
-            targetMouseY = e.clientY - centerY;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
 
             requestAnimationFrame(() => {
                 cursorGlow.style.left = e.clientX + 'px';
@@ -547,9 +512,10 @@
 
         document.addEventListener('mouseout', () => {
             cursorGlow.style.opacity = '0';
-            targetMouseX = 0;
-            targetMouseY = 0;
+            mouseX = -1000;
+            mouseY = -1000;
         });
+        
         document.addEventListener('mouseover', () => {
             cursorGlow.style.opacity = '1';
         });
@@ -595,7 +561,6 @@
 
         // Init
         resize();
-        initNeuralElements();
         animate();
     </script>
 </body>
