@@ -3,563 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Armin Malekpour | Computer Vision Developer</title>
+    <title>Saliency Map / ERD Ripple Background</title>
     <style>
-        :root {
-            --bg-color: #050505;
-            --text-main: #e0e0e0;
-            --text-dim: #6b6b6b;
-            --text-bright: #ffffff;
-            --neon-accent: #00ffd5;
-            --section-hover-bg: rgba(255, 255, 255, 0.03);
-        }
-
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-            cursor: default;
+            width: 100%;
+            height: 100%;
+            background-color: #050608; /* Deep resting-state dark */
+            overflow: hidden; /* Prevents scrollbars from the canvas */
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
-        /* 2D Generative Water Canvas */
-        #neural-canvas {
-            position: fixed;
+        /* The canvas is fixed to the background */
+        #saliency-canvas {
+            display: block;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Cursor Light Effect - Updated to match the blue water theme */
-        #cursor-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(30, 180, 255, 0.06) 0%, rgba(0, 0, 0, 0) 50%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-            transition: opacity 0.3s ease;
-            opacity: 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 10vh 2rem 50vh 2rem;
-            position: relative;
             z-index: 1;
         }
 
-        header {
-            margin-bottom: 3rem;
-            padding: 2rem;
-            border-bottom: 1px solid #222;
-            text-align: center;
+        /* Example of how your portfolio content sits above the canvas */
+        #portfolio-layer {
+            position: relative;
+            z-index: 2;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none; /* Allows mouse interactions to pass through to the canvas */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
 
         h1 {
-            font-size: 3.5rem;
-            margin: 0 0 0.5rem 0;
-            font-weight: 700;
-            letter-spacing: -1px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
         }
 
-        h2 {
-            font-size: 1.2rem;
-            margin: 0 0 1rem 0;
-            color: var(--neon-accent);
-            text-shadow: 0 0 8px rgba(0, 255, 213, 0.4);
-            font-weight: 500;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* Minimal Lamp Setup */
-        h3 {
-            font-size: 1.5rem;
-            margin: 0 0 1.5rem 0;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-        }
-
-        h3::before {
-            content: '';
-            display: block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #222; /* Off state */
-            margin-right: 14px;
-            box-shadow: 0 0 0 rgba(0, 255, 213, 0);
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        /* Lamp triggers ONLY when section is in-focus AND hovered */
-        .section-block.in-focus:hover h3::before {
-            background: var(--neon-accent);
-            box-shadow: 0 0 8px var(--neon-accent), 0 0 15px rgba(0, 255, 213, 0.6);
-            transform: scale(1.3);
-        }
-        
-        h4 {
-            font-size: 1.1rem;
-            margin: 1.5rem 0 0.5rem 0;
-            color: var(--text-main);
-        }
-
-        ul {
-            padding-left: 1.2rem;
-            margin-top: 0.5rem;
-        }
-
-        a {
-            color: var(--neon-accent);
-            text-decoration: none;
-            transition: text-shadow 0.3s ease, color 0.3s ease;
-        }
-
-        a:hover {
-            color: var(--text-bright);
-            text-shadow: 0 0 10px rgba(0, 255, 213, 0.8);
-        }
-
-        .contact-links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        /* --- Scroll & Hover Effects --- */
-        .section-block {
-            margin-bottom: 2rem;
-            padding: 2.5rem;
-            border-radius: 24px;
-            background: rgba(20, 20, 20, 0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.02);
-            
-            opacity: 0.2;
-            filter: blur(4px);
-            transform: scale(0.95) translateY(10px);
-            
-            transition: background 0.4s ease, box-shadow 0.4s ease, border 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .section-block.in-focus {
-            opacity: 1;
-            filter: blur(0);
-            transform: scale(1) translateY(0);
-        }
-
-        .section-block:hover {
-            background: var(--section-hover-bg);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .interactive-line {
-            color: var(--text-dim);
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.2s ease;
-            display: block;
-        }
-
-        li.interactive-line {
-            display: list-item;
-        }
-
-        .interactive-line:hover {
-            color: var(--text-bright);
-            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
-        }
-
-        .job-title {
-            color: var(--text-main);
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .skills-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin-top: 1rem;
-        }
-
-        .skill-tag {
-            background: rgba(0, 255, 213, 0.02);
-            border: 1px solid rgba(0, 255, 213, 0.15);
-            color: var(--text-dim);
-            padding: 0.5rem 1.2rem;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .skill-tag::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(45deg, rgba(0, 255, 213, 0.2), rgba(122, 0, 255, 0.2));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .skill-tag:hover {
-            color: var(--text-bright);
-            border-color: var(--neon-accent);
-            box-shadow: 0 0 15px rgba(0, 255, 213, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .skill-tag:hover::before {
-            opacity: 1;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #222;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--neon-accent);
+        p {
+            color: rgba(255, 255, 255, 0.5);
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
 
-    <canvas id="neural-canvas"></canvas>
-    <div id="cursor-glow"></div>
+    <canvas id="saliency-canvas"></canvas>
 
-    <div class="container">
-        <header class="section-block">
-            <h1>Armin Malekpour</h1>
-            <h2>Computer Vision Developer</h2>
-            <div class="contact-links">
-                <a href="mailto:amp.malekpour@gmail.com" class="interactive-line">amp.malekpour@gmail.com</a>
-                <span class="interactive-line" style="display:inline;">|</span>
-                <span class="interactive-line" style="display:inline;">0098-9378945291</span>
-                <span class="interactive-line" style="display:inline;">|</span>
-                <span class="interactive-line" style="display:inline;">0098-9135717899</span>
-            </div>
-        </header>
-
-        <section class="section-block">
-            <h3>Professional Experience</h3>
-            <div class="job-title interactive-line">Computer Vision and Deep Learning Developer | Sep 2022 - Present</div>
-            <div class="interactive-line" style="color: var(--neon-accent); font-size: 0.9rem;">Eyerik Intelligent Processing</div>
-            <ul>
-                <li class="interactive-line">Development and Design of an application to reconstruct 3D head representations and simulation of Hyaluronic Acid Filler injection using Gaussian Splatting</li>
-                <li class="interactive-line">Development of a fully end-to-end pipeline for data labeling, training, detection, tracking, classification and OCR for easy deployment in production lines.</li>
-                <li class="interactive-line">Development of a brand recognition and label checking pipeline to monitor the production line of SNOWA company.</li>
-                <li class="interactive-line">Design and development of a facial beauty analysis software based on facial soft tissue landmark detection</li>
-                <li class="interactive-line">Development of License Plate Detection and Recognition pipeline</li>
-                <li class="interactive-line">Design and development of Face Detection and Recognition pipeline and training landmark-aware detector model and robust recognition model</li>
-                <li class="interactive-line">Optimization of detection and recognition pipelines through batch processing and model conversion to ONNX and TensorRT for multi-camera real-time performance</li>
-                <li class="interactive-line">Improving ByteTracker by incorporating yaw direction and histogram, with no computational cost</li>
-                <li class="interactive-line">Design and development of a 3D data manipulation software using QT, VTK, Vespa, CGAL</li>
-                <li class="interactive-line">Design and development of a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM to segment the gaze target</li>
-                <li class="interactive-line">Developing a framework to compare aerial radar and optical images of regions through SWIN based image transformers</li>
-                <li class="interactive-line">Developing of an automated image annotator for face data, for training deep learning model</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>Education</h3>
-            <ul>
-                <li class="interactive-line"><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> | Sep 2016 - February 2020 | Malek Ashtar University of Technology (GPA: 15.37/20)</li>
-                <li class="interactive-line"><strong>B.Sc. in Biomedical Engineering</strong> | Sep 2012 - August 2016 | Hamedan University of Technology (GPA: 15/20)</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>Research Experience</h3>
-            
-            <h4>Independent Research</h4>
-            <ul>
-                <li class="interactive-line">Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG</li>
-                <li class="interactive-line">Exploring facial muscle movements artifacts in ICA in EEG</li>
-                <li class="interactive-line">EEG Functional and Effective connectivity analysis in time and frequency domain</li>
-                <li class="interactive-line">Proposing a statistical filter on feature maps of face images to prevent false recognition in ArcFace model</li>
-                <li class="interactive-line">Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG</li>
-                <li class="interactive-line">Alignment of eye blinks derived from video, with EEG</li>
-            </ul>
-
-            <h4>Graduate Experience</h4>
-            <ul>
-                <li class="interactive-line">Simulation of Wireless Token Ring Protocol in Omnet++</li>
-                <li class="interactive-line">Link Duration Estimation Technique for WTRP</li>
-                <li class="interactive-line">MAC Protocols of Mobile Ad hoc Networks seminar</li>
-            </ul>
-
-            <h4>Undergraduate Experience</h4>
-            <ul>
-                <li class="interactive-line">Simulation of a 3d image reconstruction technique in MATLAB</li>
-                <li class="interactive-line">Simulation of an Edge Detection Algorithm for Flame Image Processing</li>
-                <li class="interactive-line">Edge Detection using Mamdani Fuzzy Model</li>
-                <li class="interactive-line">Neuro-Prosthetic Implants seminar presentation</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>Publications (In Preparation)</h3>
-            <ul>
-                <li class="interactive-line">"Neuro-Grounding Deep Learning in Motor Imagery: Validating Model Saliency Against Event-Related Desynchronization for BCI channel reduction"</li>
-                <li class="interactive-line">"A new approach for Hyaluronic Acid Filler Injection simulation"</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>Technical Strengths</h3>
-            <ul>
-                <li class="interactive-line"><strong>Core Competencies:</strong> Prompt Engineering</li>
-                <li class="interactive-line"><strong>Programming:</strong> Python, C++, Matlab</li>
-                <li class="interactive-line"><strong>Libraries and Frameworks:</strong> Torch, Tensorflow, Keras, MNE, Braindecode, CLIP, SAM, VTK, Vespa, CGAL, DeepFace, Mediapipe, Ultralytics, Docker</li>
-                <li class="interactive-line"><strong>Image Transformers:</strong> ViT in CLIP, ArcFace in DeepFace, SiGlip</li>
-                <li class="interactive-line"><strong>3D Data:</strong> VTK, Vespa, CGAL</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>Research Interests</h3>
-            <div class="skills-grid">
-                <span class="skill-tag">Neuroscience</span>
-                <span class="skill-tag">Brain-Computer Interface</span>
-                <span class="skill-tag">Deep-Learning based Computer Vision</span>
-                <span class="skill-tag">Transformer models</span>
-                <span class="skill-tag">Attention Mechanism</span>
-                <span class="skill-tag">Affective Computing</span>
-                <span class="skill-tag">Face / Facial Analysis</span>
-                <span class="skill-tag">3D Data Processing</span>
-                <span class="skill-tag">Vision Transformers</span>
-                <span class="skill-tag">Motor Imagery</span>
-            </div>
-        </section>
-
-        <section class="section-block">
-            <h3>Language Proficiency</h3>
-            <ul>
-                <li class="interactive-line"><strong>English:</strong> C2 proficient (IELTS Academic 8.5)</li>
-            </ul>
-        </section>
-
-        <section class="section-block">
-            <h3>References / Contact Info</h3>
-            <ul>
-                <li class="interactive-line"><strong>Mrs. Parisa Kamani</strong>, CTO of Eyerik Intelligent Processing | p.kamani@eyerik.com</li>
-                <li class="interactive-line"><strong>Dr. Alireza Fallahi</strong>, Assistant Professor at Hamedan University of Technology | ali.r.fallahi@hut.ac.ir, ali.r.fallahi@gmail.com</li>
-            </ul>
-        </section>
-
+    <div id="portfolio-layer">
+        <h1>INTERPRETABILITY LAYER</h1>
+        <p>Move cursor to simulate attention mechanism & ERD</p>
     </div>
 
     <script>
-        // --- Core Variables ---
-        let width, height, centerX, centerY;
-        let mouseX = -1000;
-        let mouseY = -1000;
-        let time = 0;
-
-        const canvas = document.getElementById('neural-canvas');
+        const canvas = document.getElementById('saliency-canvas');
         const ctx = canvas.getContext('2d');
-        
-        // --- Water Particle System ---
-        let particles = [];
-        const spacing = 18; // Distance between particles (density)
-        const mouseRadius = 150; // Interaction radius
-        const interactionForce = 4; // How hard particles are pushed away
-        const springStrength = 0.04; // How fast they return
-        const friction = 0.82; // How fluid/bouncy the movement is
 
+        let width, height;
+        let nodes = [];
+        
+        // --- TWEAKABLE HYPERPARAMETERS ---
+        const spacing = 35;              // Density of the topographical grid
+        const attentionRadius = 180;     // How far the cursor's "saliency" reaches
+        const activationRate = 0.15;     // How fast the heat map spikes
+        const erdDecayRate = 0.93;       // How fast the signal attenuates back to baseline (lower = faster)
+        // ---------------------------------
+
+        let mouse = { x: -1000, y: -1000 };
+
+        // Track the "attention mechanism" (cursor)
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        // Remove focus when leaving the window
+        window.addEventListener('mouseleave', () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        });
+
+        // Handle window resizing smoothly
         function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            centerX = width / 2;
-            centerY = height / 2;
-            
-            canvas.width = width;
-            canvas.height = height;
-            
-            initParticles();
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initGrid();
         }
         window.addEventListener('resize', resize);
-        
-        function initParticles() {
-            particles = [];
-            const cols = Math.floor(width / spacing) + 2;
-            const rows = Math.floor(height / spacing) + 2;
-            const offsetX = (width - cols * spacing) / 2;
-            const offsetY = (height - rows * spacing) / 2;
 
-            for (let i = 0; i < cols; i++) {
-                for (let j = 0; j < rows; j++) {
-                    const x = i * spacing + offsetX;
-                    const y = j * spacing + offsetY;
-                    particles.push({
-                        x: x,
-                        y: y,
-                        originX: x,
-                        originY: y,
-                        vx: 0,
-                        vy: 0
-                    });
+        class NeuralNode {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.baseX = x;
+                this.baseY = y;
+                this.heat = 0; // Represents saliency weight / ERD activation [0 to 1]
+            }
+
+            update() {
+                // Calculate distance to the focal point
+                const dx = mouse.x - this.baseX;
+                const dy = mouse.y - this.baseY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Spike heat if within the attention radius
+                if (distance < attentionRadius) {
+                    const activation = 1 - (distance / attentionRadius);
+                    this.heat += activation * activationRate; 
+                    if (this.heat > 1) this.heat = 1; // Cap at max activation
+                }
+
+                // Temporal decay (simulating signal returning to baseline)
+                this.heat *= erdDecayRate;
+
+                // Subtle topographical displacement based on activation weight
+                this.x = this.baseX - (dx * this.heat * 0.15);
+                this.y = this.baseY - (dy * this.heat * 0.15);
+            }
+
+            draw() {
+                // Baseline resting state: faint, deep cyan
+                let r = 12;
+                let g = 28;
+                let b = 45;
+                let alpha = 0.2;
+                let size = 1.5;
+
+                // If activated, interpolate to vibrant orange/yellow saliency peak
+                if (this.heat > 0.01) {
+                    r = Math.floor(12 + (243 * this.heat));  // Shifts to 255
+                    g = Math.floor(28 + (172 * this.heat));  // Shifts to 200
+                    b = Math.floor(45 - (45 * this.heat));   // Shifts to 0
+                    alpha = 0.2 + (this.heat * 0.8);
+                    size = 1.5 + (this.heat * 3.5);
+                }
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                ctx.fill();
+            }
+        }
+
+        function initGrid() {
+            nodes = [];
+            // Create a grid that slightly overflows the screen to prevent edge clipping
+            for (let x = -spacing; x <= width + spacing; x += spacing) {
+                for (let y = -spacing; y <= height + spacing; y += spacing) {
+                    nodes.push(new NeuralNode(x, y));
                 }
             }
         }
 
-        // --- Main Animation Loop ---
         function animate() {
-            ctx.clearRect(0, 0, width, height);
-            time += 0.02; // Advance wave time
+            // Clear frame with a slight trailing effect for smoothness
+            ctx.fillStyle = 'rgba(5, 6, 8, 0.3)';
+            ctx.fillRect(0, 0, width, height);
 
-            // Calculate max distance for edge-fading logic
-            const maxNormDist = Math.sqrt(Math.pow(width/2, 2) + Math.pow(height/2, 2));
+            // Update physics
+            nodes.forEach(node => node.update());
 
-            // Use direct pixel manipulation for fast rendering (avoids slow path drawings)
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
+            // Draw dynamic connections between highly activated nodes
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].heat < 0.25) continue; // Only process active regions to save GPU cycles
 
-                // 1. Calculate interaction with Mouse
-                const dx = mouseX - p.x;
-                const dy = mouseY - p.y;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+                for (let j = i + 1; j < nodes.length; j++) {
+                    if (nodes[j].heat < 0.25) continue;
 
-                if (dist < mouseRadius) {
-                    const force = (mouseRadius - dist) / mouseRadius;
-                    const angle = Math.atan2(dy, dx);
-                    
-                    // Push particles away
-                    p.vx -= Math.cos(angle) * force * interactionForce;
-                    p.vy -= Math.sin(angle) * force * interactionForce;
-                }
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const distanceSq = dx * dx + dy * dy;
 
-                // 2. Add gentle fluid wave offset
-                const waveY = Math.sin((p.originX * 0.005) + time) * 8;
-                const waveX = Math.cos((p.originY * 0.005) + time) * 4;
-                
-                const targetX = p.originX + waveX;
-                const targetY = p.originY + waveY;
-
-                // 3. Apply spring physics to return to target position
-                p.vx += (targetX - p.x) * springStrength;
-                p.vy += (targetY - p.y) * springStrength;
-
-                // 4. Apply friction
-                p.vx *= friction;
-                p.vy *= friction;
-
-                // Update position
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // 5. Calculate fade to margins
-                // Center is brightest, fades to 0 at the window edges
-                const distFromCenter = Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2));
-                let opacity = 1 - (distFromCenter / (maxNormDist * 0.95)); // 0.95 tightens the margin fade
-                
-                // Square the opacity for a smoother, softer edge drop-off
-                opacity = Math.max(0, Math.min(1, opacity));
-                opacity = opacity * opacity; 
-
-                // 6. Draw particle
-                if (opacity > 0.01) {
-                    // Rich fluid blue color
-                    ctx.fillStyle = `rgba(30, 160, 255, ${opacity * 0.6})`;
-                    ctx.fillRect(p.x, p.y, 2.5, 2.5); // Using fillRect is highly optimized for thousands of particles
+                    // If nodes are close enough, draw a connecting neural thread
+                    if (distanceSq < (spacing * 1.8) * (spacing * 1.8)) {
+                        const avgHeat = (nodes[i].heat + nodes[j].heat) / 2;
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(255, 120, 0, ${avgHeat * 0.6})`;
+                        ctx.lineWidth = avgHeat * 1.5;
+                        ctx.stroke();
+                    }
                 }
             }
+
+            // Draw the nodes over the connecting lines
+            nodes.forEach(node => node.draw());
 
             requestAnimationFrame(animate);
         }
 
-        // --- Interactive Cursor Tracking ---
-        const cursorGlow = document.getElementById('cursor-glow');
-        
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-
-            requestAnimationFrame(() => {
-                cursorGlow.style.left = e.clientX + 'px';
-                cursorGlow.style.top = e.clientY + 'px';
-            });
-        });
-
-        document.addEventListener('mouseout', () => {
-            cursorGlow.style.opacity = '0';
-            mouseX = -1000;
-            mouseY = -1000;
-        });
-        
-        document.addEventListener('mouseover', () => {
-            cursorGlow.style.opacity = '1';
-        });
-
-        // --- Scroll Focus Effect (Strictly One Active) ---
-        const sections = document.querySelectorAll('.section-block');
-
-        function updateFocus() {
-            let minDistance = Infinity;
-            let closestSection = null;
-            
-            // Calculate the exact center of the user's screen
-            const viewportCenter = window.innerHeight / 2;
-
-            // Find the section whose center is closest to the viewport's center
-            sections.forEach((section) => {
-                const rect = section.getBoundingClientRect();
-                const sectionCenter = rect.top + (rect.height / 2);
-                const distance = Math.abs(viewportCenter - sectionCenter);
-
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestSection = section;
-                }
-            });
-
-            // Apply the 'in-focus' class strictly to the closest section
-            sections.forEach((section) => {
-                if (section === closestSection) {
-                    section.classList.add('in-focus');
-                } else {
-                    section.classList.remove('in-focus');
-                }
-            });
-        }
-
-        // Use requestAnimationFrame for smooth performance on scroll
-        window.addEventListener('scroll', () => requestAnimationFrame(updateFocus));
-        window.addEventListener('resize', () => requestAnimationFrame(updateFocus));
-
-        // Trigger once on initial load to set the first active element
-        updateFocus();
-
-        // Init
+        // Boot up
         resize();
         animate();
     </script>
