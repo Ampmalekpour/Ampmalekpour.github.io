@@ -47,7 +47,7 @@
             left: 0;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, rgba(0, 0, 0, 0) 50%);
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.04) 0%, rgba(0, 0, 0, 0) 55%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
@@ -251,7 +251,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--neon-accent);
         }
-    </style>
+ head { border: 1px solid red; } </style>
 </head>
 <body>
 
@@ -397,14 +397,17 @@
         let dragOffsetY = 0;
         let manualOverride = false; 
 
-        // --- 3D Brain & Connectivity Config ---
+        // --- High-Fidelity Hologram Properties ---
         const brainPoints = [];
-        const numBrainPoints = 1200; // Increased structural resolution
-        const focalLength = 650; 
-        let rotX = 0.4, rotY = 0.0;
-        const visualBrainRadius = 260; // Up-scaled collision radius
+        const numBrainPoints = 1800; // Drastically higher density for crisp holographic geometry
+        const focalLength = 700; 
+        let rotX = 0.3, rotY = 0.0;
+        const visualBrainRadius = 260; 
 
-        // --- EEG Telemetry Setup ---
+        // --- Spatial Field Scanning Constraints ---
+        const scanFieldRadius = 160; // Max radius for chaotic telemetry window centered on cursor
+
+        // --- EEG Telemetry Channels ---
         const numChannels = 12; 
         const eegLines = [];
 
@@ -434,81 +437,94 @@
         }
         window.addEventListener('resize', resize);
 
-        // --- Morphologically Accurate 3D Neuromorphic Point Cloud ---
+        // --- Anatomically Mapped 3D Hologram Synthesizer ---
         function initBrainStructure() {
             for (let i = 0; i < numBrainPoints; i++) {
                 let x, y, z, type; 
-                let randType = Math.random();
+                let segmentChoice = Math.random();
 
-                // Structural Segmentation: 75% Cerebrum, 18% Cerebellum, 7% Brain Stem
-                if (randType < 0.75) {
-                    type = 'cerebrum';
+                if (segmentChoice < 0.78) {
+                    type = 'cortex'; // Cerebral Matrix
                     let theta = Math.random() * Math.PI * 2;
                     let phi = Math.acos((Math.random() * 2) - 1);
 
-                    // Scaled up core cerebrum profiles
-                    let rx = 145, ry = 115, rz = 175;
+                    // True anatomical ratios (Ovoid geometry)
+                    let rx = 150, ry = 118, rz = 180;
                     let zBase = rz * Math.cos(phi);
-                    let taper = (zBase > 0) ? (1.0 - (zBase / rz) * 0.35) : 1.0; 
-
-                    // Superimposed multi-frequency waveforms for complex Gyri and Sulci folds
-                    let gyri = 1.0 + 0.14 * Math.sin(theta * 14) * Math.cos(phi * 12)
-                                   + 0.04 * Math.sin(theta * 4) * Math.sin(phi * 6);
                     
-                    x = rx * Math.sin(phi) * Math.cos(theta) * gyri * taper;
-                    y = ry * Math.sin(phi) * Math.sin(theta) * gyri;
-                    z = zBase * gyri;
+                    // Frontal-to-occipital projection scaling
+                    let profileTaper = (zBase > 0) ? (1.0 - (zBase / rz) * 0.32) : 1.0; 
 
-                    // Temporal Lobe structural bulge
-                    if (z < 0 && z > -70 && y > -10 && y < 50) x *= 1.18;
+                    // Complex gyri and sulci mapping (Interleaved wave equations)
+                    let gyriStructure = 1.0 
+                        + 0.15 * Math.sin(theta * 16) * Math.cos(phi * 14)
+                        + 0.05 * Math.sin(theta * 6) * Math.sin(phi * 8)
+                        + 0.02 * Math.cos(phi * 28); // Secondary fine sulcation
+                    
+                    x = rx * Math.sin(phi) * Math.cos(theta) * gyriStructure * profileTaper;
+                    y = ry * Math.sin(phi) * Math.sin(theta) * gyriStructure;
+                    z = zBase * gyriStructure;
 
-                    // Deep Longitudinal Fissure (Sagittal splitting)
-                    if (Math.abs(x) < 22) {
-                        x *= 0.25; 
-                    } else {
-                        x += x > 0 ? 18 : -18; 
+                    // Temporal lobe localization
+                    if (z < 10 && z > -70 && y > -10 && y < 55) {
+                        x *= 1.20;
+                        y *= 1.05;
                     }
-                } else if (randType < 0.93) {
-                    type = 'cerebellum'; // Positioned at lower posterior
+
+                    // Sagittal splitting (Deep longitudinal fissure separating hemispheres)
+                    if (Math.abs(x) < 24) {
+                        x *= 0.22; 
+                    } else {
+                        x += x > 0 ? 16 : -16; 
+                    }
+
+                } else if (segmentChoice < 0.94) {
+                    type = 'cerebellum'; // Distinct tightly folded hindbrain
                     let theta = Math.random() * Math.PI * 2;
-                    let r = Math.random() * 45 + 15;
-                    x = Math.cos(theta) * r * (Math.random() > 0.5 ? 1 : -1) + (x > 0 ? 25 : -25);
-                    y = Math.sin(theta) * 25 + 65;
-                    z = -90 - Math.random() * 45;
+                    let r = Math.random() * 50 + 10;
+                    x = Math.cos(theta) * r * (Math.random() > 0.5 ? 1 : -1) + (x > 0 ? 20 : -20);
+                    y = Math.sin(theta) * 22 + 65;
+                    z = -95 - Math.random() * 40;
                     
-                    // Distinct tight horizontal folds matching actual cerebellum folia
-                    let wrinkles = 1.0 + 0.12 * Math.sin(y * 0.6);
-                    x *= wrinkles; y *= wrinkles;
+                    // Fine horizontal folds (Folia)
+                    let foliaFolds = 1.0 + 0.14 * Math.sin(y * 0.75);
+                    x *= foliaFolds; 
+                    y *= foliaFolds;
                 } else {
-                    type = 'stem'; // Extending inferiorly from central base
+                    type = 'stem'; // Elongated Brain Stem projection
+                    let rad = Math.random() * 15 + 5;
                     let angle = Math.random() * Math.PI * 2;
-                    let r = Math.random() * 14 + 6;
-                    x = Math.cos(angle) * r;
-                    z = -20 - Math.random() * 40;
-                    y = 70 + Math.random() * 75; // Extending downwards
+                    x = Math.cos(angle) * rad;
+                    z = -25 - Math.random() * 35;
+                    y = 70 + Math.random() * 85; 
+                    
+                    // Stem narrowing down the spine
+                    let stemTaper = 1.0 - ((y - 70) / 85) * 0.3;
+                    x *= stemTaper;
                 }
 
                 brainPoints.push({
                     originalIndex: i,
                     x: x, y: y, z: z,
                     type: type,
-                    baseAlpha: type === 'cerebrum' ? (Math.random() * 0.35 + 0.2) : (Math.random() * 0.2 + 0.15),
-                    size: type === 'cerebrum' ? (Math.random() * 1.6 + 0.8) : (Math.random() * 1.2 + 0.6),
+                    baseAlpha: type === 'cortex' ? (Math.random() * 0.38 + 0.25) : (Math.random() * 0.22 + 0.15),
+                    size: type === 'cortex' ? (Math.random() * 1.5 + 0.7) : (Math.random() * 1.1 + 0.5),
                     connections: [] 
                 });
             }
 
-            // Establish Local Structural Connectivities (White-matter Tract mapping)
+            // High-resolution Connectome Synapses (Structural clustering)
             for (let i = 0; i < brainPoints.length; i++) {
-                let limit = brainPoints[i].type === 'cerebellum' ? 22 : 35;
+                let connectionThreshold = brainPoints[i].type === 'cerebellum' ? 20 : 32;
                 for (let j = i + 1; j < brainPoints.length; j++) {
-                    if (brainPoints[i].type !== brainPoints[j].type) continue; // Track paths within structural boundaries
+                    if (brainPoints[i].type !== brainPoints[j].type) continue; 
+                    
                     let dx = brainPoints[i].x - brainPoints[j].x;
                     let dy = brainPoints[i].y - brainPoints[j].y;
                     let dz = brainPoints[i].z - brainPoints[j].z;
                     let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
                     
-                    if (dist > 15 && dist < limit && Math.random() > 0.82) {
+                    if (dist > 12 && dist < connectionThreshold && Math.random() > 0.84) {
                         brainPoints[i].connections.push(j);
                     }
                 }
@@ -522,9 +538,9 @@
                 eegLines.push({
                     baseY: separation * (i + 1),
                     phase: Math.random() * Math.PI * 2,
-                    frequency: 0.003 + Math.random() * 0.003,
-                    amplitude: 4 + Math.random() * 7,
-                    chaosSeed: 0.6 + Math.random() * 1.4,
+                    frequency: 0.0035 + Math.random() * 0.003,
+                    amplitude: 5 + Math.random() * 6,
+                    chaosSeed: 0.5 + Math.random() * 1.5,
                     chaosOffset: Math.random() * Math.PI * 2
                 });
             }
@@ -555,38 +571,52 @@
 
             let entropyLevel = Math.min((eegActivity - 1.0) / 4.5, 1.0); 
 
-            // --- RENDER SPATIALLY MODULATED EEG CHANNELS ---
+            // --- UI SIGNAL SCANNING AREA BOUNDS ---
+            let curX = lastMouseX;
+            let curY = lastMouseY;
+
+            // --- RENDER REGIONALLY BOUNDED EEG SIGNALS ---
             ctx.lineWidth = 1.0;
             eegLines.forEach((line) => {
                 ctx.beginPath();
-                
-                line.phase += 0.02 + (entropyLevel * 0.05);
+                line.phase += 0.02 + (entropyLevel * 0.04);
 
                 for(let sx = 0; sx < width; sx += 4) {
-                    // Spatial delta calculation relative to instantaneous cursor column
-                    let distanceToCursorX = Math.abs(sx - lastMouseX);
-                    
-                    // Gaussian profile to isolate activity zone locally around the cursor
-                    let spatialFocus = Math.exp(-Math.pow(distanceToCursorX / 220, 2)); 
-
-                    // Fades to highly subtle on the sides, spikes brightness and chaotic waves under cursor
-                    let currentAlpha = 0.015 + (spatialFocus * (0.12 + entropyLevel * 0.28));
-                    
                     let baseNoise = Math.sin(sx * line.frequency + line.phase);
-                    
-                    // Spatial localized entropy factor
-                    let localizedEntropy = spatialFocus * entropyLevel;
-                    let chaosFreq = Math.sin(sx * (0.04 * line.chaosSeed + localizedEntropy * 0.25) + line.phase * (2 + localizedEntropy * 4) + line.chaosOffset) * Math.cos(sx * 0.015 * line.chaosSeed);
-                    
                     let targetY = line.baseY + (baseNoise * line.amplitude);
-                    targetY += chaosFreq * (35 * localizedEntropy); // Vertical burst under cursor displacement
 
-                    // Render segment with individual segment opacity mapping
+                    // Explicit Spatial Vector checking for the local scanning circle
+                    let dx = sx - curX;
+                    let dy = targetY - curY;
+                    let distToCursor = Math.sqrt(dx*dx + dy*dy);
+
+                    let currentAlpha = 0.012; // Whispering, faint baseline ambient signals
+                    
+                    if (distToCursor < scanFieldRadius) {
+                        // Smoothly weighted scaling toward center of circular bubble
+                        let fieldWeight = 1.0 - (distToCursor / scanFieldRadius);
+                        let localizedEntropy = fieldWeight * (0.4 + entropyLevel * 0.6);
+
+                        // Injection of dense local chaos frequencies
+                        let chaosFreq = Math.sin(sx * (0.05 * line.chaosSeed + localizedEntropy * 0.3) + line.phase * (3 + localizedEntropy * 5) + line.chaosOffset) * Math.cos(sx * 0.02 * line.chaosSeed);
+                        
+                        targetY += chaosFreq * (45 * localizedEntropy);
+                        
+                        // Recalculate distance after displacement for clean alpha projection
+                        let updatedDy = targetY - curY;
+                        let updatedDist = Math.sqrt(dx*dx + updatedDy*updatedDy);
+                        
+                        if (updatedDist < scanFieldRadius) {
+                            let alphaWeight = 1.0 - (updatedDist / scanFieldRadius);
+                            // Bright localized focus
+                            currentAlpha = 0.012 + (alphaWeight * 0.55); 
+                        }
+                    }
+
                     if(sx === 0) {
                         ctx.moveTo(sx, targetY);
                     } else {
                         ctx.lineTo(sx, targetY);
-                        // Segment stroke coloring logic to allow continuous alpha variations safely
                         ctx.strokeStyle = `rgba(0, 255, 213, ${currentAlpha})`;
                         ctx.stroke();
                         ctx.beginPath();
@@ -594,6 +624,17 @@
                     }
                 }
             });
+
+            // --- SPATIAL SCANNING CIRCLE PERIMETER RING ---
+            ctx.beginPath();
+            ctx.arc(curX, curY, scanFieldRadius, 0, Math.PI * 2);
+            let circleGradient = ctx.createRadialGradient(curX, curY, scanFieldRadius - 15, curX, curY, scanFieldRadius);
+            circleGradient.addColorStop(0, 'rgba(0, 255, 213, 0)');
+            circleGradient.addColorStop(0.6, `rgba(0, 255, 213, ${0.04 + entropyLevel * 0.06})`);
+            circleGradient.addColorStop(1, 'rgba(0, 255, 213, 0)');
+            ctx.strokeStyle = circleGradient;
+            ctx.lineWidth = 2.0;
+            ctx.stroke();
 
             // --- UI DODGING PHYSICS ---
             if (!isDragging) {
@@ -644,7 +685,7 @@
             centerX += (targetCenterX - centerX) * 0.08;
             centerY += (targetCenterY - centerY) * 0.08;
 
-            // --- RENDER 3D BRAIN STRUCTURE ---
+            // --- RENDER LOCALIZED 3D HOLOGRAM METRICS ---
             rotY += 0.002;
             let finalRotY = rotY + (mouseX * 0.001);
             let finalRotX = rotX + (mouseY * 0.001);
@@ -657,7 +698,8 @@
 
             brainPoints.forEach(pt => {
                 let rot = rotatePoints(pt, finalRotX, finalRotY);
-                let scale = focalLength / (focalLength + rot.z + 200);
+                // Focal depth equation generating clear orthographic/perspective holographic overlap
+                let scale = focalLength / (focalLength + rot.z + 210);
                 
                 if (scale > 0) {
                     let projX = centerX + rot.x * scale;
@@ -675,12 +717,12 @@
 
             processedPoints.sort((a, b) => b.zDepth - a.zDepth);
 
-            // Render Connectivity Meshes
+            // Connectome Tract Matrix
             ctx.lineWidth = 0.35;
             processedPoints.forEach(pt => {
                 let nodeData = brainPoints[pt.originalIndex];
-                let pulse = (Math.sin(timeStamp * 0.003 + pt.originalIndex * 0.1) + 1) / 2;
-                let tractAlpha = 0.01 + (pulse * 0.04) + (entropyLevel * 0.12); 
+                let structuralPulse = (Math.sin(timeStamp * 0.0025 + pt.originalIndex * 0.08) + 1) / 2;
+                let tractAlpha = 0.01 + (structuralPulse * 0.04) + (entropyLevel * 0.12); 
 
                 ctx.strokeStyle = `rgba(0, 255, 213, ${tractAlpha})`;
                 ctx.beginPath();
@@ -694,7 +736,7 @@
                 ctx.stroke();
             });
 
-            // Render Synaptic Nodes
+            // Holographic Projection Synaptic Points
             processedPoints.forEach(pt => {
                 let dx = pt.projX - actualMouseX;
                 let dy = pt.projY - actualMouseY;
@@ -706,13 +748,13 @@
                 if (distance < 150 && width > 768) {
                     let proximityRatio = 1.0 - (distance / 150);
                     alpha += proximityRatio * 0.5;
-                    ptSize *= (1.0 + proximityRatio * 0.7);
+                    ptSize *= (1.0 + proximityRatio * 0.65);
 
                     ctx.beginPath();
                     ctx.moveTo(pt.projX, pt.projY);
                     ctx.lineTo(actualMouseX, actualMouseY);
-                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.05})`;
-                    ctx.lineWidth = 0.5;
+                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.04})`;
+                    ctx.lineWidth = 0.4;
                     ctx.stroke();
                 }
 
