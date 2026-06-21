@@ -25,6 +25,10 @@
             cursor: default;
         }
 
+        body.grabbing {
+            cursor: grabbing !important;
+        }
+
         /* Interactive Canvas Background */
         #neural-canvas {
             position: fixed;
@@ -33,7 +37,7 @@
             width: 100vw;
             height: 100vh;
             z-index: 0;
-            pointer-events: none;
+            pointer-events: none; /* Let clicks pass through to text */
         }
 
         /* Cursor Light Effect */
@@ -378,21 +382,30 @@
 
     <script>
         // --- System Variables ---
-        let width, height, centerX, centerY;
+        let width, height;
+        let centerX, centerY;
+        let targetCenterX, targetCenterY; // For dynamic dodging and dragging
         let mouseX = 0, mouseY = 0;
-        let targetMouseX = 0, targetMouseY = 0;
+        let globalTargetMouseX = 0, globalTargetMouseY = 0;
         let lastMouseX = 0, lastMouseY = 0;
         let mouseVelocity = 0;
         let eegActivity = 1.0; 
 
+        // --- Dragging Variables ---
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let manualOverride = false; 
+
         // --- 3D Brain & Connectivity Config ---
         const brainPoints = [];
-        const numBrainPoints = 850; // Increased density for structural fidelity
-        const focalLength = 550;
+        const numBrainPoints = 850; 
+        const focalLength = 650; // Increased to accommodate bigger brain
         let rotX = 0.4, rotY = 0.0;
+        const visualBrainRadius = 240; // Collision boundary for dodging text
 
         // --- EEG Telemetry Setup ---
-        const numChannels = 12; // Increased channel density
+        const numChannels = 12; 
         const eegLines = [];
 
         const neuralCanvas = document.getElementById('neural-canvas');
@@ -401,13 +414,18 @@
         function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
-            centerX = width * 0.75; 
-            centerY = height * 0.5;
+            
+            // Set initial default targets
+            targetCenterX = width * 0.75; 
+            targetCenterY = height * 0.5;
             
             if(width < 768) { 
-                centerX = width * 0.5;
-                centerY = height * 0.3;
+                targetCenterX = width * 0.5;
+                targetCenterY = height * 0.3;
             }
+
+            centerX = targetCenterX;
+            centerY = targetCenterY;
 
             neuralCanvas.width = width;
             neuralCanvas.height = height;
@@ -421,39 +439,33 @@
                 let theta = Math.random() * Math.PI * 2;
                 let phi = Math.acos((Math.random() * 2) - 1);
 
-                // Base cranium dimensions
-                let rx = 90; 
-                let ry = 70;  
-                let rz = 110; 
+                // Base cranium dimensions - SCALED UP BY ~40%
+                let rx = 135; 
+                let ry = 105;  
+                let rz = 165; 
 
-                // Structural modifiers for anatomical accuracy
                 let taper = 1.0;
                 let zBase = rz * Math.cos(phi);
                 
-                // Frontal Lobe Taper (narrower at the front)
                 if (zBase > 0) taper = 1.0 - (zBase / rz) * 0.35; 
 
-                // Cortical Convolutions (Gyri/Sulci)
                 let convolutions = 1.0 + 0.12 * Math.sin(theta * 10) * Math.cos(phi * 10);
                 
                 let x = rx * Math.sin(phi) * Math.cos(theta) * convolutions * taper;
                 let y = ry * Math.sin(phi) * Math.sin(theta) * convolutions;
                 let z = zBase * convolutions;
 
-                // Temporal Lobe Bulge
-                if (z < 0 && z > -50 && y > -10 && y < 30) {
+                if (z < 0 && z > -70 && y > -15 && y < 45) {
                     x *= 1.15;
                 }
 
-                // Longitudinal Fissure (Separating Hemispheres)
-                if (Math.abs(x) < 14) {
+                if (Math.abs(x) < 20) {
                     x *= 0.3; 
                 } else {
-                    x += x > 0 ? 12 : -12; 
+                    x += x > 0 ? 18 : -18; 
                 }
 
-                // Cerebellum & Brain Stem tuck
-                if (y > 25 && z < -10) {
+                if (y > 35 && z < -15) {
                     y *= 0.85;
                     x *= 0.9;
                 }
@@ -462,12 +474,12 @@
                     originalIndex: i,
                     x: x, y: y, z: z,
                     baseAlpha: Math.random() * 0.4 + 0.2,
-                    size: Math.random() * 1.5 + 0.6,
-                    connections: [] // To hold functional connectivity targets
+                    size: Math.random() * 1.8 + 0.8, // Slightly bigger nodes
+                    connections: [] 
                 });
             }
 
-            // Establish Functional Connectivity Tracts (Nearest Neighbors)
+            // Establish Functional Connectivity Tracts
             for (let i = 0; i < brainPoints.length; i++) {
                 for (let j = i + 1; j < brainPoints.length; j++) {
                     let dx = brainPoints[i].x - brainPoints[j].x;
@@ -475,8 +487,7 @@
                     let dz = brainPoints[i].z - brainPoints[j].z;
                     let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
                     
-                    // Connect nodes that are within a local tract radius
-                    if (dist > 12 && dist < 26 && Math.random() > 0.75) {
+                    if (dist > 18 && dist < 38 && Math.random() > 0.75) {
                         brainPoints[i].connections.push(j);
                     }
                 }
@@ -491,7 +502,10 @@
                     baseY: separation * (i + 1),
                     phase: Math.random() * Math.PI * 2,
                     frequency: 0.003 + Math.random() * 0.004,
-                    amplitude: 5 + Math.random() * 8
+                    amplitude: 5 + Math.random() * 8,
+                    // Unique entropy modifiers for desynchronization
+                    chaosSeed: 0.5 + Math.random() * 1.5,
+                    chaosOffset: Math.random() * Math.PI * 2
                 });
             }
         }
@@ -512,19 +526,74 @@
             ctx.clearRect(0, 0, width, height);
             let timeStamp = Date.now();
 
-            mouseX += (targetMouseX - mouseX) * 0.06;
-            mouseY += (targetMouseY - mouseY) * 0.06;
+            mouseX += (globalTargetMouseX - mouseX) * 0.06;
+            mouseY += (globalTargetMouseY - mouseY) * 0.06;
 
-            // Compute Entropy / Chaos multiplier based directly on velocity
             eegActivity += (mouseVelocity - eegActivity) * 0.05;
             if (eegActivity < 1.0) eegActivity = 1.0;
-            mouseVelocity *= 0.93; // Friction
+            mouseVelocity *= 0.93; 
 
-            // Normalize entropy index from 0.0 (still) to 1.0 (fast motion)
             let entropyLevel = Math.min((eegActivity - 1.0) / 4.5, 1.0); 
             
-            // Faded when still, bright when moving
-            let eegBrightness = 0.05 + (entropyLevel * 0.85); 
+            // Subtler maximum brightness
+            let eegBrightness = 0.02 + (entropyLevel * 0.35); 
+
+            // --- UI DODGING PHYSICS (Repulsion) ---
+            if (!isDragging) {
+                let repelX = 0;
+                let repelY = 0;
+                const sections = document.querySelectorAll('.section-block');
+                
+                sections.forEach(sec => {
+                    let rect = sec.getBoundingClientRect();
+                    // If section is on screen
+                    if(rect.bottom > 0 && rect.top < height) {
+                        // Create a padded bounding box around the text container
+                        let secLeft = rect.left - 40;
+                        let secRight = rect.right + 40;
+                        let secTop = rect.top - 40;
+                        let secBottom = rect.bottom + 40;
+
+                        // Check if the brain's target center is overlapping this area
+                        if (targetCenterX > secLeft - visualBrainRadius &&
+                            targetCenterX < secRight + visualBrainRadius &&
+                            targetCenterY > secTop - visualBrainRadius &&
+                            targetCenterY < secBottom + visualBrainRadius) {
+                            
+                            let secCX = rect.left + rect.width / 2;
+                            let secCY = rect.top + rect.height / 2;
+
+                            let dx = targetCenterX - secCX;
+                            let dy = targetCenterY - secCY;
+                            let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
+                            // Push away strongly
+                            repelX += (dx / dist) * 15; 
+                            repelY += (dy / dist) * 5; 
+                        }
+                    }
+                });
+
+                if (repelX !== 0 || repelY !== 0) {
+                    targetCenterX += repelX;
+                    targetCenterY += repelY;
+                } else if (!manualOverride) {
+                    // Drift back to default sweet spots if undisturbed and not manually placed
+                    let defaultX = width > 768 ? width * 0.75 : width * 0.5;
+                    let defaultY = height * 0.5;
+                    targetCenterX += (defaultX - targetCenterX) * 0.02;
+                    targetCenterY += (defaultY - targetCenterY) * 0.02;
+                }
+
+                // Constrain to screen bounds
+                targetCenterX = Math.max(visualBrainRadius, Math.min(width - visualBrainRadius, targetCenterX));
+                targetCenterY = Math.max(visualBrainRadius, Math.min(height - visualBrainRadius, targetCenterY));
+            }
+
+            // Smoothly interpolate actual center to target center
+            centerX += (targetCenterX - centerX) * 0.08;
+            centerY += (targetCenterY - centerY) * 0.08;
+
 
             // --- RENDER ENTROPY-DRIVEN EEG CHANNELS ---
             ctx.lineWidth = 1.0;
@@ -532,17 +601,15 @@
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(0, 255, 213, ${eegBrightness})`; 
                 
-                // Base speed + chaos speed
                 line.phase += 0.02 + (entropyLevel * 0.1);
 
                 for(let sx = 0; sx < width; sx += 4) {
                     let baseNoise = Math.sin(sx * line.frequency + line.phase);
                     
-                    // Tsallis/Chaos proxy: High frequency waves driven strictly by the entropy parameter
-                    let chaosFreq = Math.sin(sx * (0.1 + entropyLevel * 0.4) + line.phase * (3 + entropyLevel * 6)) * Math.cos(sx * 0.05);
+                    // Distinct per-line chaos using seeds and offsets
+                    let chaosFreq = Math.sin(sx * (0.04 * line.chaosSeed + entropyLevel * 0.15) + line.phase * (2 + entropyLevel * 3) + line.chaosOffset) * Math.cos(sx * 0.02 * line.chaosSeed);
                     
                     let targetY = line.baseY + (baseNoise * line.amplitude);
-                    // Inject the entropy chaos directly into the amplitude displacement
                     targetY += chaosFreq * (25 * entropyLevel);
 
                     if(sx === 0) ctx.moveTo(sx, targetY);
@@ -551,7 +618,7 @@
                 ctx.stroke();
             });
 
-            // --- RENDER 3D BRAIN & FUNCTIONAL CONNECTIVITY ---
+            // --- RENDER 3D BRAIN ---
             rotY += 0.002;
             let finalRotY = rotY + (mouseX * 0.001);
             let finalRotX = rotX + (mouseY * 0.001);
@@ -562,7 +629,6 @@
             let projectedCoords = new Array(numBrainPoints);
             const processedPoints = [];
 
-            // Transform all points
             brainPoints.forEach(pt => {
                 let rot = rotatePoints(pt, finalRotX, finalRotY);
                 let scale = focalLength / (focalLength + rot.z + 200);
@@ -577,23 +643,18 @@
                         baseAlpha: pt.baseAlpha, size: pt.size 
                     };
                     processedPoints.push(pData);
-                    projectedCoords[pt.originalIndex] = pData; // Store for fast O(1) tract lookup
+                    projectedCoords[pt.originalIndex] = pData; 
                 }
             });
 
-            // Sort by depth for correct overlapping
             processedPoints.sort((a, b) => b.zDepth - a.zDepth);
 
-            // Draw Functional Connectivity Lines First (so they sit behind nodes)
+            // Functional Connectivity Lines
             ctx.lineWidth = 0.4;
             processedPoints.forEach(pt => {
                 let nodeData = brainPoints[pt.originalIndex];
-                
-                // Neural pulse simulation (sine wave over time unique to each node index)
                 let pulse = (Math.sin(timeStamp * 0.003 + pt.originalIndex * 0.1) + 1) / 2;
-                
-                // Tracts light up slightly with the pulse, but flare brightly with global entropy/movement
-                let tractAlpha = 0.01 + (pulse * 0.06) + (entropyLevel * 0.2); 
+                let tractAlpha = 0.01 + (pulse * 0.06) + (entropyLevel * 0.15); 
 
                 ctx.strokeStyle = `rgba(0, 255, 213, ${tractAlpha})`;
                 ctx.beginPath();
@@ -607,7 +668,7 @@
                 ctx.stroke();
             });
 
-            // Draw Brain Nodes
+            // Brain Nodes
             processedPoints.forEach(pt => {
                 let dx = pt.projX - actualMouseX;
                 let dy = pt.projY - actualMouseY;
@@ -617,22 +678,20 @@
                 let ptSize = pt.size * pt.scale * 1.5;
 
                 // Mouse Proximity Glow
-                if (distance < 120 && width > 768) {
-                    let proximityRatio = 1.0 - (distance / 120);
-                    alpha += proximityRatio * 0.7;
+                if (distance < 140 && width > 768) {
+                    let proximityRatio = 1.0 - (distance / 140);
+                    alpha += proximityRatio * 0.6;
                     ptSize *= (1.0 + proximityRatio * 0.8);
 
-                    // Anchor alignment line to cursor
                     ctx.beginPath();
                     ctx.moveTo(pt.projX, pt.projY);
                     ctx.lineTo(actualMouseX, actualMouseY);
-                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.08})`;
+                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.06})`;
                     ctx.lineWidth = 0.5;
                     ctx.stroke();
                 }
 
-                // Nodes flare slightly with overall kinetic entropy
-                alpha += (entropyLevel * 0.3);
+                alpha += (entropyLevel * 0.25);
 
                 ctx.beginPath();
                 ctx.arc(pt.projX, pt.projY, ptSize, 0, Math.PI * 2);
@@ -643,17 +702,42 @@
             requestAnimationFrame(animate);
         }
 
-        // --- Tracking Interactivity ---
+        // --- Tracking & Dragging Interactivity ---
         const cursorGlow = document.getElementById('cursor-glow');
         
+        document.addEventListener('mousedown', (e) => {
+            // Prevent dragging if clicking on a link
+            if (e.target.tagName.toLowerCase() === 'a') return;
+
+            let dx = e.clientX - centerX;
+            let dy = e.clientY - centerY;
+            
+            // If click is within the visual radius of the brain
+            if (Math.sqrt(dx*dx + dy*dy) < visualBrainRadius) {
+                isDragging = true;
+                dragOffsetX = dx;
+                dragOffsetY = dy;
+                manualOverride = true; // User has taken control
+                document.body.classList.add('grabbing');
+                
+                // Add a spike of entropy when grabbed
+                mouseVelocity += 3.0;
+            }
+        });
+
         document.addEventListener('mousemove', (e) => {
-            targetMouseX = e.clientX - (width / 2);
-            targetMouseY = e.clientY - (height / 2);
+            globalTargetMouseX = e.clientX - (width / 2);
+            globalTargetMouseY = e.clientY - (height / 2);
 
             let instantaneousV = Math.sqrt(Math.pow(e.clientX - lastMouseX, 2) + Math.pow(e.clientY - lastMouseY, 2));
             if (instantaneousV > 2) {
                 mouseVelocity += instantaneousV * 0.05; 
                 if(mouseVelocity > 6.0) mouseVelocity = 6.0; 
+            }
+
+            if (isDragging) {
+                targetCenterX = e.clientX - dragOffsetX;
+                targetCenterY = e.clientY - dragOffsetY;
             }
 
             lastMouseX = e.clientX;
@@ -665,11 +749,21 @@
             });
         });
 
-        document.addEventListener('mouseout', () => {
-            cursorGlow.style.opacity = '0';
-            targetMouseX = 0;
-            targetMouseY = 0;
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.classList.remove('grabbing');
         });
+
+        document.addEventListener('mouseout', (e) => {
+            if(e.relatedTarget === null) { // Mouse left window entirely
+                cursorGlow.style.opacity = '0';
+                globalTargetMouseX = 0;
+                globalTargetMouseY = 0;
+                isDragging = false;
+                document.body.classList.remove('grabbing');
+            }
+        });
+
         document.addEventListener('mouseover', () => {
             cursorGlow.style.opacity = '1';
         });
@@ -704,8 +798,9 @@
 
         window.addEventListener('scroll', () => {
             requestAnimationFrame(updateFocus);
-            mouseVelocity += 0.5; // Scrolling adds to global entropy
+            mouseVelocity += 0.5; 
         });
+        
         window.addEventListener('resize', () => requestAnimationFrame(updateFocus));
 
         // Boot Sequence
