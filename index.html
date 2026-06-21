@@ -43,7 +43,7 @@
             left: 0;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(0, 255, 213, 0.04) 0%, rgba(0, 0, 0, 0) 50%);
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.05) 0%, rgba(0, 0, 0, 0) 50%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
@@ -383,16 +383,16 @@
         let targetMouseX = 0, targetMouseY = 0;
         let lastMouseX = 0, lastMouseY = 0;
         let mouseVelocity = 0;
-        let eegActivity = 1.0; // Base baseline structural speed/chaos multiplier
+        let eegActivity = 1.0; 
 
-        // --- 3D Brain Matrix Config ---
+        // --- 3D Brain & Connectivity Config ---
         const brainPoints = [];
-        const numBrainPoints = 550;
-        const focalLength = 500;
-        let rotX = 0.4, rotY = 0.0; // Initial angle parameters
+        const numBrainPoints = 850; // Increased density for structural fidelity
+        const focalLength = 550;
+        let rotX = 0.4, rotY = 0.0;
 
-        // --- EEG Baseline Telemetry Setup ---
-        const numChannels = 4;
+        // --- EEG Telemetry Setup ---
+        const numChannels = 12; // Increased channel density
         const eegLines = [];
 
         const neuralCanvas = document.getElementById('neural-canvas');
@@ -401,10 +401,10 @@
         function resize() {
             width = window.innerWidth;
             height = window.innerHeight;
-            centerX = width * 0.75; // Shunted to right hemisphere of page to avoid text overlapping completely
+            centerX = width * 0.75; 
             centerY = height * 0.5;
             
-            if(width < 768) { // Mobile structural realignment
+            if(width < 768) { 
                 centerX = width * 0.5;
                 centerY = height * 0.3;
             }
@@ -415,44 +415,71 @@
         }
         window.addEventListener('resize', resize);
 
-        // Procedurally shape a complex 3D Brain structure using modified spherical coordinates
+        // --- Anatomically Mapped 3D Point Cloud ---
         function initBrainStructure() {
             for (let i = 0; i < numBrainPoints; i++) {
-                // Uniform distributions
                 let theta = Math.random() * Math.PI * 2;
                 let phi = Math.acos((Math.random() * 2) - 1);
 
-                // Morphing constants to stretch a standard sphere into a structural brain morphology
-                let rx = 105; 
-                let ry = 85;  
-                let rz = 135; 
+                // Base cranium dimensions
+                let rx = 90; 
+                let ry = 70;  
+                let rz = 110; 
 
-                // Procedural generation of sulci & gyri fold anomalies using inter-locked high frequency sine harmonics
-                let convolutions = 1.0 + 0.18 * Math.sin(theta * 7.5) * Math.cos(phi * 7.5);
-                convolutions += 0.04 * Math.sin(theta * 20) * Math.cos(phi * 20); // Small micro-structural noise
+                // Structural modifiers for anatomical accuracy
+                let taper = 1.0;
+                let zBase = rz * Math.cos(phi);
+                
+                // Frontal Lobe Taper (narrower at the front)
+                if (zBase > 0) taper = 1.0 - (zBase / rz) * 0.35; 
 
-                let x = rx * Math.sin(phi) * Math.cos(theta) * convolutions;
+                // Cortical Convolutions (Gyri/Sulci)
+                let convolutions = 1.0 + 0.12 * Math.sin(theta * 10) * Math.cos(phi * 10);
+                
+                let x = rx * Math.sin(phi) * Math.cos(theta) * convolutions * taper;
                 let y = ry * Math.sin(phi) * Math.sin(theta) * convolutions;
-                let z = rz * Math.cos(phi) * convolutions;
+                let z = zBase * convolutions;
 
-                // Create the longitudinal fissure cleft (Separating left/right hemispheres)
-                if (Math.abs(x) < 18) {
-                    x *= 0.65; 
-                } else {
-                    x += x > 0 ? 8 : -8; // Distribute outwards
+                // Temporal Lobe Bulge
+                if (z < 0 && z > -50 && y > -10 && y < 30) {
+                    x *= 1.15;
                 }
 
-                // Flatten base structures slightly to simulate cerebellum tucked beneath
-                if (y > 40 && z < 0) {
-                    y *= 0.75;
-                    x *= 0.85;
+                // Longitudinal Fissure (Separating Hemispheres)
+                if (Math.abs(x) < 14) {
+                    x *= 0.3; 
+                } else {
+                    x += x > 0 ? 12 : -12; 
+                }
+
+                // Cerebellum & Brain Stem tuck
+                if (y > 25 && z < -10) {
+                    y *= 0.85;
+                    x *= 0.9;
                 }
 
                 brainPoints.push({
+                    originalIndex: i,
                     x: x, y: y, z: z,
-                    baseAlpha: Math.random() * 0.4 + 0.3,
-                    size: Math.random() * 1.2 + 0.8
+                    baseAlpha: Math.random() * 0.4 + 0.2,
+                    size: Math.random() * 1.5 + 0.6,
+                    connections: [] // To hold functional connectivity targets
                 });
+            }
+
+            // Establish Functional Connectivity Tracts (Nearest Neighbors)
+            for (let i = 0; i < brainPoints.length; i++) {
+                for (let j = i + 1; j < brainPoints.length; j++) {
+                    let dx = brainPoints[i].x - brainPoints[j].x;
+                    let dy = brainPoints[i].y - brainPoints[j].y;
+                    let dz = brainPoints[i].z - brainPoints[j].z;
+                    let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    
+                    // Connect nodes that are within a local tract radius
+                    if (dist > 12 && dist < 26 && Math.random() > 0.75) {
+                        brainPoints[i].connections.push(j);
+                    }
+                }
             }
         }
 
@@ -463,21 +490,17 @@
                 eegLines.push({
                     baseY: separation * (i + 1),
                     phase: Math.random() * Math.PI * 2,
-                    speed: 0.03 + Math.random() * 0.02,
-                    frequency: 0.005 + Math.random() * 0.005,
-                    amplitude: 8 + Math.random() * 10
+                    frequency: 0.003 + Math.random() * 0.004,
+                    amplitude: 5 + Math.random() * 8
                 });
             }
         }
 
-        // Standard 3D transformation matrices rotation calculations
         function rotatePoints(pt, ax, ay) {
-            // Rotate Y
             let cosY = Math.cos(ay), sinY = Math.sin(ay);
             let x1 = pt.x * cosY - pt.z * sinY;
             let z1 = pt.x * sinY + pt.z * cosY;
 
-            // Rotate X
             let cosX = Math.cos(ax), sinX = Math.sin(ax);
             let y2 = pt.y * cosX - z1 * sinX;
             let z2 = pt.y * sinX + z1 * cosX;
@@ -485,36 +508,42 @@
             return { x: x1, y: y2, z: z2 };
         }
 
-        // Main Draw Loop
         function animate() {
             ctx.clearRect(0, 0, width, height);
+            let timeStamp = Date.now();
 
-            // Interpolate tracking variables smoothly
             mouseX += (targetMouseX - mouseX) * 0.06;
             mouseY += (targetMouseY - mouseY) * 0.06;
 
-            // Decay calculated mouse velocity kinetics into ERD base baseline telemetry state
+            // Compute Entropy / Chaos multiplier based directly on velocity
             eegActivity += (mouseVelocity - eegActivity) * 0.05;
             if (eegActivity < 1.0) eegActivity = 1.0;
-            mouseVelocity *= 0.94; // Friction damping
+            mouseVelocity *= 0.93; // Friction
 
-            // --- PART 1: RENDER RUNNING EEG CHANNELS ---
+            // Normalize entropy index from 0.0 (still) to 1.0 (fast motion)
+            let entropyLevel = Math.min((eegActivity - 1.0) / 4.5, 1.0); 
+            
+            // Faded when still, bright when moving
+            let eegBrightness = 0.05 + (entropyLevel * 0.85); 
+
+            // --- RENDER ENTROPY-DRIVEN EEG CHANNELS ---
             ctx.lineWidth = 1.0;
-            eegLines.forEach((line, index) => {
+            eegLines.forEach((line) => {
                 ctx.beginPath();
-                ctx.strokeStyle = `rgba(0, 255, 213, ${0.06 / (eegActivity * 0.4)})`; // Dims dynamically during spikes
+                ctx.strokeStyle = `rgba(0, 255, 213, ${eegBrightness})`; 
                 
-                line.phase += line.speed * (eegActivity * 0.7);
+                // Base speed + chaos speed
+                line.phase += 0.02 + (entropyLevel * 0.1);
 
-                for(let sx = 0; sx < width; sx += 3) {
-                    // Combine standard alpha sin waves with chaotic high frequency noise models during active velocity spike phases
+                for(let sx = 0; sx < width; sx += 4) {
                     let baseNoise = Math.sin(sx * line.frequency + line.phase);
-                    let highFreqChaos = Math.sin(sx * 0.15 + line.phase * 3) * Math.cos(sx * 0.08);
                     
-                    let targetY = line.baseY + (baseNoise * line.amplitude) * (eegActivity * 0.5);
-                    if(eegActivity > 1.5) {
-                        targetY += (highFreqChaos * 12) * (eegActivity - 1.0);
-                    }
+                    // Tsallis/Chaos proxy: High frequency waves driven strictly by the entropy parameter
+                    let chaosFreq = Math.sin(sx * (0.1 + entropyLevel * 0.4) + line.phase * (3 + entropyLevel * 6)) * Math.cos(sx * 0.05);
+                    
+                    let targetY = line.baseY + (baseNoise * line.amplitude);
+                    // Inject the entropy chaos directly into the amplitude displacement
+                    targetY += chaosFreq * (25 * entropyLevel);
 
                     if(sx === 0) ctx.moveTo(sx, targetY);
                     else ctx.lineTo(sx, targetY);
@@ -522,77 +551,109 @@
                 ctx.stroke();
             });
 
-            // --- PART 2: RENDER 3D ROTATING BRAIN CLOUD ---
-            // Subtle perpetual passive rotation coupled with parallax vector offset from tracking mouse pointer
-            rotY += 0.003;
-            let finalRotY = rotY + (mouseX * 0.0015);
-            let finalRotX = rotX + (mouseY * 0.0015);
+            // --- RENDER 3D BRAIN & FUNCTIONAL CONNECTIVITY ---
+            rotY += 0.002;
+            let finalRotY = rotY + (mouseX * 0.001);
+            let finalRotX = rotX + (mouseY * 0.001);
 
-            // Transform, sort depth vectors to bypass standard projection rendering collision errors
-            const processedPoints = brainPoints.map(pt => {
-                let rot = rotatePoints(pt, finalRotX, finalRotY);
-                
-                // standard mathematical perspective scaling calculations
-                let scale = focalLength / (focalLength + rot.z + 200);
-                let projX = centerX + rot.x * scale;
-                let projY = centerY + rot.y * scale;
-
-                return { projX, projY, scale, zDepth: rot.z, baseAlpha: pt.baseAlpha, size: pt.size };
-            });
-
-            // Sort points by furthest back first so depth buffer calculations composite correctly
-            processedPoints.sort((a, b) => b.zDepth - a.zDepth);
-
-            // Fetch structural positions to check pixel distance tolerances from mouse mapping variables
             let actualMouseX = mouseX + (width / 2);
             let actualMouseY = mouseY + (height / 2);
 
-            processedPoints.forEach(pt => {
-                if (pt.scale <= 0) return;
+            let projectedCoords = new Array(numBrainPoints);
+            const processedPoints = [];
 
+            // Transform all points
+            brainPoints.forEach(pt => {
+                let rot = rotatePoints(pt, finalRotX, finalRotY);
+                let scale = focalLength / (focalLength + rot.z + 200);
+                
+                if (scale > 0) {
+                    let projX = centerX + rot.x * scale;
+                    let projY = centerY + rot.y * scale;
+                    
+                    let pData = { 
+                        originalIndex: pt.originalIndex, 
+                        projX, projY, scale, zDepth: rot.z, 
+                        baseAlpha: pt.baseAlpha, size: pt.size 
+                    };
+                    processedPoints.push(pData);
+                    projectedCoords[pt.originalIndex] = pData; // Store for fast O(1) tract lookup
+                }
+            });
+
+            // Sort by depth for correct overlapping
+            processedPoints.sort((a, b) => b.zDepth - a.zDepth);
+
+            // Draw Functional Connectivity Lines First (so they sit behind nodes)
+            ctx.lineWidth = 0.4;
+            processedPoints.forEach(pt => {
+                let nodeData = brainPoints[pt.originalIndex];
+                
+                // Neural pulse simulation (sine wave over time unique to each node index)
+                let pulse = (Math.sin(timeStamp * 0.003 + pt.originalIndex * 0.1) + 1) / 2;
+                
+                // Tracts light up slightly with the pulse, but flare brightly with global entropy/movement
+                let tractAlpha = 0.01 + (pulse * 0.06) + (entropyLevel * 0.2); 
+
+                ctx.strokeStyle = `rgba(0, 255, 213, ${tractAlpha})`;
+                ctx.beginPath();
+                nodeData.connections.forEach(targetIdx => {
+                    let targetPt = projectedCoords[targetIdx];
+                    if (targetPt) {
+                        ctx.moveTo(pt.projX, pt.projY);
+                        ctx.lineTo(targetPt.projX, targetPt.projY);
+                    }
+                });
+                ctx.stroke();
+            });
+
+            // Draw Brain Nodes
+            processedPoints.forEach(pt => {
                 let dx = pt.projX - actualMouseX;
                 let dy = pt.projY - actualMouseY;
                 let distance = Math.sqrt(dx * dx + dy * dy);
 
                 let alpha = pt.baseAlpha * pt.scale;
-                let ptSize = pt.size * pt.scale * 1.8;
+                let ptSize = pt.size * pt.scale * 1.5;
 
-                // If element falls inside localized proximity threshold, ignite glow parameters
-                if (distance < 110 && width > 768) {
-                    let proximityRatio = 1.0 - (distance / 110);
-                    alpha += proximityRatio * 0.6;
+                // Mouse Proximity Glow
+                if (distance < 120 && width > 768) {
+                    let proximityRatio = 1.0 - (distance / 120);
+                    alpha += proximityRatio * 0.7;
                     ptSize *= (1.0 + proximityRatio * 0.8);
 
-                    // Cast vector link tracking lines from matrix nodes to active mouse mapping target
+                    // Anchor alignment line to cursor
                     ctx.beginPath();
                     ctx.moveTo(pt.projX, pt.projY);
                     ctx.lineTo(actualMouseX, actualMouseY);
-                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.07})`;
+                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.08})`;
                     ctx.lineWidth = 0.5;
                     ctx.stroke();
                 }
 
+                // Nodes flare slightly with overall kinetic entropy
+                alpha += (entropyLevel * 0.3);
+
                 ctx.beginPath();
                 ctx.arc(pt.projX, pt.projY, ptSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 255, 213, ${alpha * 0.85})`;
+                ctx.fillStyle = `rgba(0, 255, 213, ${alpha})`;
                 ctx.fill();
             });
 
             requestAnimationFrame(animate);
         }
 
-        // --- Tracking Interactivity listeners ---
+        // --- Tracking Interactivity ---
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousemove', (e) => {
             targetMouseX = e.clientX - (width / 2);
             targetMouseY = e.clientY - (height / 2);
 
-            // Compute structural instantaneous velocity magnitudes to calculate kinetic activity indices
             let instantaneousV = Math.sqrt(Math.pow(e.clientX - lastMouseX, 2) + Math.pow(e.clientY - lastMouseY, 2));
-            if (instantaneousV > 4) {
-                mouseVelocity += instantaneousV * 0.035;
-                if(mouseVelocity > 5.5) mouseVelocity = 5.5; // Upper clipping ceiling bound
+            if (instantaneousV > 2) {
+                mouseVelocity += instantaneousV * 0.05; 
+                if(mouseVelocity > 6.0) mouseVelocity = 6.0; 
             }
 
             lastMouseX = e.clientX;
@@ -613,7 +674,7 @@
             cursorGlow.style.opacity = '1';
         });
 
-        // --- Scroll Tracking Logic (Strictly Focus One Active Layout Element) ---
+        // --- Scroll Focus Effects ---
         const sections = document.querySelectorAll('.section-block');
 
         function updateFocus() {
@@ -643,12 +704,11 @@
 
         window.addEventListener('scroll', () => {
             requestAnimationFrame(updateFocus);
-            // Scrolling triggers mild kinetic velocity perturbations inside the EEG data loop
-            mouseVelocity += 0.45;
+            mouseVelocity += 0.5; // Scrolling adds to global entropy
         });
         window.addEventListener('resize', () => requestAnimationFrame(updateFocus));
 
-        // Initial System Deploy Execution Runtime commands
+        // Boot Sequence
         resize();
         initBrainStructure();
         updateFocus();
