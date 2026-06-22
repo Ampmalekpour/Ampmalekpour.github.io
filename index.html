@@ -6,13 +6,12 @@
     <title>Armin Malekpour | Computer Vision Developer</title>
     <style>
         :root {
-            --bg-color: #030305;
+            --bg-color: #050505;
             --text-main: #e0e0e0;
-            --text-dim: #7a7a8c;
+            --text-dim: #6b6b6b;
             --text-bright: #ffffff;
             --neon-accent: #00ffd5;
-            --neon-purple: #b052ff;
-            --section-hover-bg: rgba(255, 255, 255, 0.02);
+            --section-hover-bg: rgba(255, 255, 255, 0.03);
         }
 
         body {
@@ -30,6 +29,7 @@
             cursor: grabbing !important;
         }
 
+        /* Interactive Canvas Background */
         #neural-canvas {
             position: fixed;
             top: 0;
@@ -38,21 +38,21 @@
             height: 100vh;
             z-index: 0;
             pointer-events: none; 
-            mix-blend-mode: screen;
         }
 
+        /* Cursor Light Effect */
         #cursor-glow {
             position: fixed;
             top: 0;
             left: 0;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(176, 82, 255, 0.05) 0%, rgba(0, 255, 213, 0.02) 30%, rgba(0, 0, 0, 0) 60%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(0, 255, 213, 0.04) 0%, rgba(0, 0, 0, 0) 55%);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: none;
             z-index: 9999;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.3s ease;
             opacity: 0;
         }
 
@@ -67,7 +67,7 @@
         header {
             margin-bottom: 3rem;
             padding: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid #222;
             text-align: center;
         }
 
@@ -76,16 +76,13 @@
             margin: 0 0 0.5rem 0;
             font-weight: 700;
             letter-spacing: -1px;
-            background: linear-gradient(90deg, #fff, #b052ff, #00ffd5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         h2 {
             font-size: 1.2rem;
             margin: 0 0 1rem 0;
             color: var(--neon-accent);
-            text-shadow: 0 0 10px rgba(0, 255, 213, 0.3);
+            text-shadow: 0 0 8px rgba(0, 255, 213, 0.4);
             font-weight: 500;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -106,22 +103,22 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.2); 
+            background: #222; 
             margin-right: 14px;
             box-shadow: 0 0 0 rgba(0, 255, 213, 0);
-            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .section-block.in-focus:hover h3::before {
-            background: var(--neon-purple);
-            box-shadow: 0 0 10px var(--neon-purple), 0 0 20px rgba(176, 82, 255, 0.5);
-            transform: scale(1.5);
+            background: var(--neon-accent);
+            box-shadow: 0 0 8px var(--neon-accent), 0 0 15px rgba(0, 255, 213, 0.6);
+            transform: scale(1.3);
         }
         
         h4 {
             font-size: 1.1rem;
             margin: 1.5rem 0 0.5rem 0;
-            color: var(--text-bright);
+            color: var(--text-main);
         }
 
         ul {
@@ -132,12 +129,12 @@
         a {
             color: var(--neon-accent);
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: text-shadow 0.3s ease, color 0.3s ease;
         }
 
         a:hover {
             color: var(--text-bright);
-            text-shadow: 0 0 12px rgba(0, 255, 213, 0.8);
+            text-shadow: 0 0 10px rgba(0, 255, 213, 0.8);
         }
 
         .contact-links {
@@ -148,20 +145,21 @@
             margin-top: 1.5rem;
         }
 
+        /* --- Scroll & Focus Effects --- */
         .section-block {
             margin-bottom: 2rem;
             padding: 2.5rem;
-            border-radius: 20px;
-            background: rgba(10, 10, 15, 0.4);
+            border-radius: 24px;
+            background: rgba(10, 10, 10, 0.4);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.02);
             
             opacity: 0.15;
-            filter: blur(6px);
-            transform: scale(0.95) translateY(15px);
+            filter: blur(4px);
+            transform: scale(0.95) translateY(10px);
             
-            transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: background 0.4s ease, box-shadow 0.4s ease, border 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .section-block.in-focus {
@@ -172,15 +170,15 @@
 
         .section-block:hover {
             background: var(--section-hover-bg);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(176, 82, 255, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 213, 0.1);
         }
 
         .interactive-line {
             color: var(--text-dim);
             font-size: 1rem;
             margin-bottom: 0.8rem;
-            transition: color 0.3s ease, transform 0.3s ease;
+            transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.2s ease;
             display: block;
         }
 
@@ -190,10 +188,11 @@
 
         .interactive-line:hover {
             color: var(--text-bright);
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
         }
 
         .job-title {
-            color: var(--text-bright);
+            color: var(--text-main);
             font-weight: 600;
             margin-top: 1rem;
         }
@@ -201,15 +200,15 @@
         .skills-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.8rem;
-            margin-top: 1.5rem;
+            gap: 0.6rem;
+            margin-top: 1rem;
         }
 
         .skill-tag {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 255, 213, 0.02);
+            border: 1px solid rgba(0, 255, 213, 0.15);
             color: var(--text-dim);
-            padding: 0.6rem 1.4rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 30px;
             font-size: 0.85rem;
             transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -222,7 +221,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(0, 255, 213, 0.15), rgba(176, 82, 255, 0.15));
+            background: linear-gradient(45deg, rgba(0, 255, 213, 0.15), rgba(122, 0, 255, 0.15));
             z-index: -1;
             opacity: 0;
             transition: opacity 0.4s ease;
@@ -230,19 +229,28 @@
 
         .skill-tag:hover {
             color: var(--text-bright);
-            border-color: rgba(176, 82, 255, 0.4);
-            box-shadow: 0 5px 15px rgba(176, 82, 255, 0.15);
-            transform: translateY(-3px);
+            border-color: var(--neon-accent);
+            box-shadow: 0 0 15px rgba(0, 255, 213, 0.2);
+            transform: translateY(-2px);
         }
 
         .skill-tag:hover::before {
             opacity: 1;
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #030305; }
-        ::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-accent);
+        }
     </style>
 </head>
 <body>
@@ -269,33 +277,54 @@
             <div class="interactive-line" style="color: var(--neon-accent); font-size: 0.9rem;">Eyerik Intelligent Processing</div>
             <ul>
                 <li class="interactive-line">Development and Design of an application to reconstruct 3D head representations and simulation of Hyaluronic Acid Filler injection using Gaussian Splatting</li>
-                <li class="interactive-line">Development of a fully decoupled end-to-end pipeline (PaddleOCR/YOLO) for data labeling, training, detection, tracking, classification and OCR for industrial production lines.</li>
+                <li class="interactive-line">Development of a fully end-to-end pipeline for data labeling, training, detection, tracking, classification and OCR for easy deployment in production lines.</li>
                 <li class="interactive-line">Development of a brand recognition and label checking pipeline to monitor the production line of SNOWA company.</li>
                 <li class="interactive-line">Design and development of a facial beauty analysis software based on facial soft tissue landmark detection</li>
-                <li class="interactive-line">Development of highly optimized, low-compute License Plate Detection and Recognition pipelines</li>
-                <li class="interactive-line">Design and development of "EyePass": a facial recognition and tracking pipeline utilizing AdaFace and Tsallis entropy</li>
+                <li class="interactive-line">Development of License Plate Detection and Recognition pipeline</li>
+                <li class="interactive-line">Design and development of Face Detection and Recognition pipeline and training landmark-aware detector model and robust recognition model</li>
                 <li class="interactive-line">Optimization of detection and recognition pipelines through batch processing and model conversion to ONNX and TensorRT for multi-camera real-time performance</li>
                 <li class="interactive-line">Improving ByteTracker by incorporating yaw direction and histogram, with no computational cost</li>
+                <li class="interactive-line">Design and development of a 3D data manipulation software using QT, VTK, Vespa, CGAL</li>
                 <li class="interactive-line">Design and development of a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM to segment the gaze target</li>
+                <li class="interactive-line">Developing a framework to compare aerial radar and optical images of regions through SWIN based image transformers</li>
+                <li class="interactive-line">Developing of an automated image annotator for face data, for training deep learning model</li>
             </ul>
         </section>
 
         <section class="section-block">
             <h3>Education</h3>
             <ul>
-                <li class="interactive-line"><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> | Sep 2016 - February 2020 | Malek Ashtar University of Technology</li>
-                <li class="interactive-line"><strong>B.Sc. in Biomedical Engineering</strong> | Sep 2012 - August 2016 | Hamedan University of Technology</li>
+                <li class="interactive-line"><strong>M.Sc. in Electrical (Telecommunications) Engineering</strong> | Sep 2016 - February 2020 | Malek Ashtar University of Technology (GPA: 15.37/20)</li>
+                <li class="interactive-line"><strong>B.Sc. in Biomedical Engineering</strong> | Sep 2012 - August 2016 | Hamedan University of Technology (GPA: 15/20)</li>
             </ul>
         </section>
 
         <section class="section-block">
             <h3>Research Experience</h3>
+             
             <h4>Independent Research</h4>
             <ul>
                 <li class="interactive-line">Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG</li>
                 <li class="interactive-line">Exploring facial muscle movements artifacts in ICA in EEG</li>
-                <li class="interactive-line">Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG</li>
+                <li class="interactive-line">EEG Functional and Effective connectivity analysis in time and frequency domain</li>
                 <li class="interactive-line">Proposing a statistical filter on feature maps of face images to prevent false recognition in ArcFace model</li>
+                <li class="interactive-line">Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG</li>
+                <li class="interactive-line">Alignment of eye blinks derived from video, with EEG</li>
+            </ul>
+
+            <h4>Graduate Experience</h4>
+            <ul>
+                <li class="interactive-line">Simulation of Wireless Token Ring Protocol in Omnet++</li>
+                <li class="interactive-line">Link Duration Estimation Technique for WTRP</li>
+                <li class="interactive-line">MAC Protocols of Mobile Ad hoc Networks seminar</li>
+            </ul>
+
+            <h4>Undergraduate Experience</h4>
+            <ul>
+                <li class="interactive-line">Simulation of a 3d image reconstruction technique in MATLAB</li>
+                <li class="interactive-line">Simulation of an Edge Detection Algorithm for Flame Image Processing</li>
+                <li class="interactive-line">Edge Detection using Mamdani Fuzzy Model</li>
+                <li class="interactive-line">Neuro-Prosthetic Implants seminar presentation</li>
             </ul>
         </section>
 
@@ -310,7 +339,7 @@
         <section class="section-block">
             <h3>Technical Strengths</h3>
             <ul>
-                <li class="interactive-line"><strong>Core Competencies:</strong> Computer Vision, Machine Learning, Deep Learning, Computational Neuroscience</li>
+                <li class="interactive-line"><strong>Core Competencies:</strong> Prompt Engineering</li>
                 <li class="interactive-line"><strong>Programming:</strong> Python, C++, Matlab</li>
                 <li class="interactive-line"><strong>Libraries and Frameworks:</strong> Torch, Tensorflow, Keras, MNE, Braindecode, CLIP, SAM, VTK, Vespa, CGAL, DeepFace, Mediapipe, Ultralytics, Docker</li>
                 <li class="interactive-line"><strong>Image Transformers:</strong> ViT in CLIP, ArcFace in DeepFace, SiGlip</li>
@@ -319,16 +348,18 @@
         </section>
 
         <section class="section-block">
-            <h3>Focus Areas</h3>
+            <h3>Research Interests</h3>
             <div class="skills-grid">
-                <span class="skill-tag">Applied Neuropsychology</span>
+                <span class="skill-tag">Neuroscience</span>
                 <span class="skill-tag">Brain-Computer Interface</span>
-                <span class="skill-tag">Explainable AI (XAI)</span>
-                <span class="skill-tag">Industrial OCR Pipelines</span>
-                <span class="skill-tag">3D Reconstruction & Splatting</span>
+                <span class="skill-tag">Deep-Learning based Computer Vision</span>
+                <span class="skill-tag">Transformer models</span>
+                <span class="skill-tag">Attention Mechanism</span>
                 <span class="skill-tag">Affective Computing</span>
                 <span class="skill-tag">Face / Facial Analysis</span>
-                <span class="skill-tag">Edge Computing & Optimization</span>
+                <span class="skill-tag">3D Data Processing</span>
+                <span class="skill-tag">Vision Transformers</span>
+                <span class="skill-tag">Motor Imagery</span>
             </div>
         </section>
 
@@ -339,9 +370,18 @@
             </ul>
         </section>
 
+        <section class="section-block">
+            <h3>References / Contact Info</h3>
+            <ul>
+                <li class="interactive-line"><strong>Mrs. Parisa Kamani</strong>, CTO of Eyerik Intelligent Processing | p.kamani@eyerik.com</li>
+                <li class="interactive-line"><strong>Dr. Alireza Fallahi</strong>, Assistant Professor at Hamedan University of Technology | ali.r.fallahi@hut.ac.ir, ali.r.fallahi@gmail.com</li>
+            </ul>
+        </section>
+
     </div>
 
     <script>
+        // --- System Variables ---
         let width, height;
         let centerX, centerY;
         let targetCenterX, targetCenterY; 
@@ -351,21 +391,24 @@
         let mouseVelocity = 0;
         let eegActivity = 1.0; 
 
+        // --- Dragging Variables ---
         let isDragging = false;
         let dragOffsetX = 0;
         let dragOffsetY = 0;
         let manualOverride = false; 
 
-        // --- Artistic Tractography Variables ---
-        const brainPaths = [];
-        const numPaths = 90; // Increased density for artistic feel
-        const pointsPerPath = 50; 
+        // --- High-Fidelity Hologram Properties ---
+        const brainPoints = [];
+        const numBrainPoints = 2200; // Increased density for cleaner lobe boundaries
         const focalLength = 700; 
-        let rotX = 0.15, rotY = -0.5; // Classic angled profile
+        let rotX = 0.3, rotY = 0.0;
         const visualBrainRadius = 260; 
-        const scanFieldRadius = 180; 
 
-        const numChannels = 6; 
+        // --- Spatial Field Scanning Constraints ---
+        const scanFieldRadius = 160; 
+
+        // --- EEG Telemetry Channels ---
+        const numChannels = 12; 
         const eegLines = [];
 
         const neuralCanvas = document.getElementById('neural-canvas');
@@ -376,11 +419,11 @@
             height = window.innerHeight;
             
             targetCenterX = width * 0.75; 
-            targetCenterY = height * 0.45;
+            targetCenterY = height * 0.5;
             
             if(width < 768) { 
                 targetCenterX = width * 0.5;
-                targetCenterY = height * 0.28;
+                targetCenterY = height * 0.3;
             }
 
             if(!manualOverride) {
@@ -394,93 +437,114 @@
         }
         window.addEventListener('resize', resize);
 
-        // --- Generative Cortical Tractography Engine ---
+        // --- Anatomically Mapped 3D Hologram Synthesizer ---
         function initBrainStructure() {
-            brainPaths.length = 0;
-
-            for (let p = 0; p < numPaths; p++) {
-                let pathPoints = [];
-                let type = 'cortex';
-                
+            for (let i = 0; i < numBrainPoints; i++) {
+                let x, y, z, type; 
                 let segmentChoice = Math.random();
-                if (segmentChoice > 0.80 && segmentChoice <= 0.92) type = 'cerebellum';
-                else if (segmentChoice > 0.92) type = 'stem';
 
-                let seedTheta = Math.random() * Math.PI * 2;
-                let seedPhi = Math.acos((Math.random() * 2) - 1);
-                
-                let rx = 145, ry = 115, rz = 175;
-                let hSign = Math.random() > 0.5 ? 1 : -1; 
+                if (segmentChoice < 0.76) {
+                    type = 'cortex'; 
+                    let theta = Math.random() * Math.PI * 2;
+                    let phi = Math.acos((Math.random() * 2) - 1);
 
-                let cx = rx * Math.sin(seedPhi) * Math.cos(seedTheta);
-                let cy = ry * Math.sin(seedPhi) * Math.sin(seedTheta);
-                let cz = rz * Math.cos(seedPhi);
+                    // True baseline anatomical proportions (Ovoid proportions)
+                    let rx = 145, ry = 115, rz = 175;
+                    let zBase = rz * Math.cos(phi);
+                    
+                    // Profile morphing: Narrower frontal pole (+z), wider occipital pole (-z)
+                    let profileTaper = (zBase > 0) ? (1.0 - (zBase / rz) * 0.24) : (1.0 + (Math.abs(zBase) / rz) * 0.08);
 
-                if (type === 'cerebellum') {
-                    cx = (Math.random() * 45 + 10) * hSign;
-                    cy = Math.random() * 30 + 55;
-                    cz = -95 - Math.random() * 35;
-                } else if (type === 'stem') {
-                    cx = Math.random() * 12 - 6;
-                    cy = 60 + Math.random() * 90;
-                    cz = -35 - Math.random() * 20;
+                    // Advanced cross-modulating wave equations for deep gyri and sulci
+                    let organicConvolutions = Math.sin(theta * 14 + Math.cos(phi * 8) * 3) * Math.cos(phi * 12 + Math.sin(theta * 6) * 2);
+                    let microTextures = Math.sin(phi * 35) * Math.cos(theta * 35) * 0.2;
+                    let gyriStructure = 1.0 + 0.17 * organicConvolutions + 0.03 * microTextures;
+                    
+                    x = rx * Math.sin(phi) * Math.cos(theta) * gyriStructure * profileTaper;
+                    y = ry * Math.sin(phi) * Math.sin(theta) * gyriStructure;
+                    z = zBase * gyriStructure;
+
+                    // Morphing Temporal Lobes (inferior-lateral bulges curving forward)
+                    if (z > -20 && z < 80 && y > -10) {
+                        let temporalLobeFactor = Math.sin((z + 20) / 100 * Math.PI) * Math.cos(y / ry * Math.PI * 0.5);
+                        if (temporalLobeFactor > 0) {
+                            x *= (1.0 + temporalLobeFactor * 0.25);
+                            y += temporalLobeFactor * 14;
+                        }
+                    }
+
+                    // Morphing Cerebellum Undercut (carving structural cavity in back-bottom hemisphere)
+                    if (z < -30 && y > 15) {
+                        y -= (Math.abs(z) - 30) * 0.38;
+                    }
+
+                    // Pristine Sagittal Split (sharper, structural medial longitudinal fissure)
+                    let hemisphereSign = Math.sign(x) || 1;
+                    x = Math.abs(x);
+                    if (x < 14) {
+                        x = 3 + x * 0.15; 
+                    } else {
+                        x += 12; 
+                    }
+                    x *= hemisphereSign;
+
+                } else if (segmentChoice < 0.93) {
+                    type = 'cerebellum'; 
+                    let sideSign = Math.random() > 0.5 ? 1 : -1;
+                    let theta = Math.random() * Math.PI * 2;
+                    let r = Math.random() * 42 + 15;
+                    
+                    // Positioned tightly in the posterior-inferior cavity mapping
+                    x = (Math.cos(theta) * r * 0.75 + 34 * sideSign);
+                    y = Math.sin(theta) * 20 + 58;
+                    z = -95 - Math.random() * 45;
+                    
+                    // Emulating dense horizontal cerebellar folia lines
+                    let foliaSheets = 1.0 + 0.09 * Math.sin(y * 1.6);
+                    x *= foliaSheets; 
+                    z *= foliaSheets;
+                } else {
+                    type = 'stem'; 
+                    let rad = Math.random() * 11 + 5;
+                    let angle = Math.random() * Math.PI * 2;
+                    
+                    x = Math.cos(angle) * rad;
+                    z = -35 - Math.random() * 15; // Centered near brain stem locus
+                    y = 60 + Math.random() * 95; 
+                    
+                    let stemTaper = 1.0 - ((y - 60) / 95) * 0.4;
+                    x *= stemTaper;
+                    z *= stemTaper;
                 }
 
-                // Give each path a unique base hue mapping (Cyberpunk / Artistic palette)
-                let baseHue = type === 'cortex' ? (170 + Math.random() * 40) : // Cyans/Blues
-                              type === 'cerebellum' ? (260 + Math.random() * 50) : // Purples/Pinks
-                              (200 + Math.random() * 30); // Deep blues for stem
+                brainPoints.push({
+                    originalIndex: i,
+                    x: x, y: y, z: z,
+                    type: type,
+                    baseAlpha: type === 'cortex' ? (Math.random() * 0.38 + 0.25) : (Math.random() * 0.22 + 0.15),
+                    size: type === 'cortex' ? (Math.random() * 1.4 + 0.7) : (Math.random() * 1.0 + 0.5),
+                    connections: [] 
+                });
+            }
 
-                for (let i = 0; i < pointsPerPath; i++) {
-                    if (type === 'cortex') {
-                        let angle = (i / pointsPerPath) * Math.PI * 8 + (p * 2.5); 
-                        
-                        let foldRadius = 22 + Math.sin(p * 4 + i * 0.3) * 10;
-                        let tx = cx + Math.sin(angle) * foldRadius;
-                        let ty = cy + Math.cos(angle * 1.5) * foldRadius;
-                        let tz = cz + Math.sin(angle * 0.8) * foldRadius;
-
-                        let distZ = tz / rz;
-                        let profileTaper = (tz > 0) ? (1.0 - distZ * 0.3) : (1.0 + Math.abs(distZ) * 0.15);
-                        
-                        if (tz < -20 && ty > 10) ty -= (Math.abs(tz) - 20) * 0.45;
-                        if (tz > -10 && tz < 65 && ty > -5) { tx *= 1.2; ty += 10; }
-
-                        tx = rx * (tx / rx) * profileTaper;
-                        ty = ry * (ty / ry);
-
-                        let currentSide = Math.sign(tx) || hSign;
-                        tx = Math.abs(tx);
-                        if (tx < 15) tx = 5 + tx * 0.15;
-                        else tx += 15;
-                        tx *= currentSide;
-
-                        pathPoints.push({ x: tx, y: ty, z: tz });
-                        cx += Math.sin(p + i * 0.08) * 6;
-                        cz += Math.cos(p * 2.5 + i * 0.15) * 5;
-
-                    } else if (type === 'cerebellum') {
-                        let wave = (i / pointsPerPath) * Math.PI * 10;
-                        let tx = cx + Math.sin(wave) * 26;
-                        let ty = cy + (i * 0.6) + Math.cos(wave * 2.5) * 3;
-                        let tz = cz + Math.cos(wave) * 14;
-                        pathPoints.push({ x: tx, y: ty, z: tz });
-                    } else if (type === 'stem') {
-                        let progress = (i / pointsPerPath);
-                        let tx = cx + Math.sin(progress * Math.PI * 5 + p) * (3 * (1.0 - progress));
-                        let ty = cy + (progress * 65);
-                        let tz = cz + Math.cos(progress * Math.PI * 5 + p) * (3 * (1.0 - progress));
-                        pathPoints.push({ x: tx, y: ty, z: tz });
+            // High-resolution Connectome Tract Graph
+            for (let i = 0; i < brainPoints.length; i++) {
+                let connectionThreshold = brainPoints[i].type === 'cerebellum' ? 18 : 30;
+                for (let j = i + 1; j < brainPoints.length; j++) {
+                    if (brainPoints[i].type !== brainPoints[j].type) continue; 
+                    
+                    // CRITICAL FIX: Block structural tracts crossing hemispheres to keep fissure clear
+                    if (brainPoints[i].type === 'cortex' && Math.sign(brainPoints[i].x) !== Math.sign(brainPoints[j].x)) continue;
+                    
+                    let dx = brainPoints[i].x - brainPoints[j].x;
+                    let dy = brainPoints[i].y - brainPoints[j].y;
+                    let dz = brainPoints[i].z - brainPoints[j].z;
+                    let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    
+                    if (dist > 10 && dist < connectionThreshold && Math.random() > 0.82) {
+                        brainPoints[i].connections.push(j);
                     }
                 }
-
-                brainPaths.push({
-                    points: pathPoints,
-                    type: type,
-                    hue: baseHue,
-                    pulsePhase: Math.random() * Math.PI * 2,
-                    pulseSpeed: 0.01 + Math.random() * 0.02
-                });
             }
         }
 
@@ -491,49 +555,49 @@
                 eegLines.push({
                     baseY: separation * (i + 1),
                     phase: Math.random() * Math.PI * 2,
-                    frequency: 0.002 + Math.random() * 0.002,
-                    amplitude: 8 + Math.random() * 10,
-                    chaosSeed: 0.5 + Math.random() * 2.0,
+                    frequency: 0.0035 + Math.random() * 0.003,
+                    amplitude: 5 + Math.random() * 6,
+                    chaosSeed: 0.5 + Math.random() * 1.5,
                     chaosOffset: Math.random() * Math.PI * 2
                 });
             }
         }
 
-        function rotatePoint(x, y, z, ax, ay) {
+        function rotatePoints(pt, ax, ay) {
             let cosY = Math.cos(ay), sinY = Math.sin(ay);
-            let x1 = x * cosY - z * sinY;
-            let z1 = x * sinY + z * cosY;
+            let x1 = pt.x * cosY - pt.z * sinY;
+            let z1 = pt.x * sinY + pt.z * cosY;
 
             let cosX = Math.cos(ax), sinX = Math.sin(ax);
-            let y2 = y * cosX - z1 * sinX;
-            let z2 = y * sinX + z1 * cosX;
+            let y2 = pt.y * cosX - z1 * sinX;
+            let z2 = pt.y * sinX + z1 * cosX;
 
             return { x: x1, y: y2, z: z2 };
         }
 
         function animate() {
-            // Soft clear for motion blur trail effect
-            ctx.fillStyle = 'rgba(3, 3, 5, 0.3)';
-            ctx.fillRect(0, 0, width, height);
-            
-            mouseX += (globalTargetMouseX - mouseX) * 0.05;
-            mouseY += (globalTargetMouseY - mouseY) * 0.05;
+            ctx.clearRect(0, 0, width, height);
+            let timeStamp = Date.now();
 
-            eegActivity += (mouseVelocity - eegActivity) * 0.04;
+            mouseX += (globalTargetMouseX - mouseX) * 0.06;
+            mouseY += (globalTargetMouseY - mouseY) * 0.06;
+
+            eegActivity += (mouseVelocity - eegActivity) * 0.05;
             if (eegActivity < 1.0) eegActivity = 1.0;
-            mouseVelocity *= 0.94; 
+            mouseVelocity *= 0.93; 
 
-            let entropyLevel = Math.min((eegActivity - 1.0) / 4.0, 1.0); 
+            let entropyLevel = Math.min((eegActivity - 1.0) / 4.5, 1.0); 
+
             let curX = lastMouseX;
             let curY = lastMouseY;
 
-            // --- RENDER EEG WAVE BACKGROUND ---
-            ctx.lineWidth = 1.5;
+            // --- RENDER REGIONALLY BOUNDED EEG SIGNALS ---
+            ctx.lineWidth = 1.0;
             eegLines.forEach((line) => {
                 ctx.beginPath();
-                line.phase += 0.015 + (entropyLevel * 0.05);
+                line.phase += 0.02 + (entropyLevel * 0.04);
 
-                for(let sx = 0; sx < width; sx += 5) {
+                for(let sx = 0; sx < width; sx += 4) {
                     let baseNoise = Math.sin(sx * line.frequency + line.phase);
                     let targetY = line.baseY + (baseNoise * line.amplitude);
 
@@ -541,28 +605,30 @@
                     let dy = targetY - curY;
                     let distToCursor = Math.sqrt(dx*dx + dy*dy);
 
-                    let currentAlpha = 0.02; 
+                    let currentAlpha = 0.012; 
                     
                     if (distToCursor < scanFieldRadius) {
                         let fieldWeight = 1.0 - (distToCursor / scanFieldRadius);
-                        let localizedEntropy = fieldWeight * (0.5 + entropyLevel * 0.8);
+                        let localizedEntropy = fieldWeight * (0.4 + entropyLevel * 0.6);
 
-                        let chaosFreq = Math.sin(sx * (0.04 * line.chaosSeed + localizedEntropy * 0.4) + line.phase * (3 + localizedEntropy * 4) + line.chaosOffset) * Math.cos(sx * 0.015 * line.chaosSeed);
-                        targetY += chaosFreq * (55 * localizedEntropy);
+                        let chaosFreq = Math.sin(sx * (0.05 * line.chaosSeed + localizedEntropy * 0.3) + line.phase * (3 + localizedEntropy * 5) + line.chaosOffset) * Math.cos(sx * 0.02 * line.chaosSeed);
+                        
+                        targetY += chaosFreq * (45 * localizedEntropy);
                         
                         let updatedDy = targetY - curY;
                         let updatedDist = Math.sqrt(dx*dx + updatedDy*updatedDy);
                         
                         if (updatedDist < scanFieldRadius) {
-                            currentAlpha = 0.02 + ((1.0 - (updatedDist / scanFieldRadius)) * 0.4); 
+                            let alphaWeight = 1.0 - (updatedDist / scanFieldRadius);
+                            currentAlpha = 0.012 + (alphaWeight * 0.55); 
                         }
                     }
 
-                    if(sx === 0) ctx.moveTo(sx, targetY);
-                    else {
+                    if(sx === 0) {
+                        ctx.moveTo(sx, targetY);
+                    } else {
                         ctx.lineTo(sx, targetY);
-                        // Ethereal purple/cyan gradient for the background lines
-                        ctx.strokeStyle = `hsla(${240 + Math.sin(line.phase)*40}, 80%, 60%, ${currentAlpha})`;
+                        ctx.strokeStyle = `rgba(0, 255, 213, ${currentAlpha})`;
                         ctx.stroke();
                         ctx.beginPath();
                         ctx.moveTo(sx, targetY);
@@ -570,131 +636,149 @@
                 }
             });
 
+            // --- SPATIAL SCANNING CIRCLE PERIMETER RING ---
+            ctx.beginPath();
+            ctx.arc(curX, curY, scanFieldRadius, 0, Math.PI * 2);
+            let circleGradient = ctx.createRadialGradient(curX, curY, scanFieldRadius - 15, curX, curY, scanFieldRadius);
+            circleGradient.addColorStop(0, 'rgba(0, 255, 213, 0)');
+            circleGradient.addColorStop(0.6, `rgba(0, 255, 213, ${0.04 + entropyLevel * 0.06})`);
+            circleGradient.addColorStop(1, 'rgba(0, 255, 213, 0)');
+            ctx.strokeStyle = circleGradient;
+            ctx.lineWidth = 2.0;
+            ctx.stroke();
+
             // --- UI DODGING PHYSICS ---
             if (!isDragging) {
-                let repelX = 0, repelY = 0;
+                let repelX = 0;
+                let repelY = 0;
                 const sections = document.querySelectorAll('.section-block');
                 
                 sections.forEach(sec => {
                     let rect = sec.getBoundingClientRect();
                     if(rect.bottom > 0 && rect.top < height) {
-                        if (targetCenterX > (rect.left - 40) - visualBrainRadius &&
-                            targetCenterX < (rect.right + 40) + visualBrainRadius &&
-                            targetCenterY > (rect.top - 40) - visualBrainRadius &&
-                            targetCenterY < (rect.bottom + 40) + visualBrainRadius) {
+                        let secLeft = rect.left - 30;
+                        let secRight = rect.right + 30;
+                        let secTop = rect.top - 30;
+                        let secBottom = rect.bottom + 30;
+
+                        if (targetCenterX > secLeft - visualBrainRadius &&
+                            targetCenterX < secRight + visualBrainRadius &&
+                            targetCenterX < secBottom + visualBrainRadius) {
                             
-                            let dx = targetCenterX - (rect.left + rect.width / 2);
-                            let dy = targetCenterY - (rect.top + rect.height / 2);
+                            let secCX = rect.left + rect.width / 2;
+                            let secCY = rect.top + rect.height / 2;
+
+                            let dx = targetCenterX - secCX;
+                            let dy = targetCenterY - secCY;
                             let dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                            repelX += (dx / dist) * 18; 
-                            repelY += (dy / dist) * 8; 
+
+                            repelX += (dx / dist) * 16; 
+                            repelY += (dy / dist) * 6; 
                         }
                     }
                 });
 
                 if (repelX !== 0 || repelY !== 0) {
-                    targetCenterX += repelX; targetCenterY += repelY;
+                    targetCenterX += repelX;
+                    targetCenterY += repelY;
                 } else if (!manualOverride) {
-                    targetCenterX += ((width > 768 ? width * 0.75 : width * 0.5) - targetCenterX) * 0.015;
-                    targetCenterY += ((height * 0.45) - targetCenterY) * 0.015;
+                    let defaultX = width > 768 ? width * 0.75 : width * 0.5;
+                    let defaultY = height * 0.5;
+                    targetCenterX += (defaultX - targetCenterX) * 0.02;
+                    targetCenterY += (defaultY - targetCenterY) * 0.02;
                 }
-                targetCenterX = Math.max(visualBrainRadius - 20, Math.min(width - (visualBrainRadius - 20), targetCenterX));
-                targetCenterY = Math.max(visualBrainRadius - 20, Math.min(height - (visualBrainRadius - 20), targetCenterY));
+
+                targetCenterX = Math.max(visualBrainRadius - 50, Math.min(width - (visualBrainRadius - 50), targetCenterX));
+                targetCenterY = Math.max(visualBrainRadius - 50, Math.min(height - (visualBrainRadius - 50), targetCenterY));
             }
 
-            centerX += (targetCenterX - centerX) * 0.06;
-            centerY += (targetCenterY - centerY) * 0.06;
+            centerX += (targetCenterX - centerX) * 0.08;
+            centerY += (targetCenterY - centerY) * 0.08;
 
-            // --- RENDER ARTISTIC TRACTOGRAPHY ---
-            rotY += 0.0012; // Slow graceful spin
-            let finalRotY = rotY + (mouseX * 0.0006);
-            let finalRotX = rotX + (mouseY * 0.0006);
+            // --- RENDER LOCALIZED 3D HOLOGRAM METRICS ---
+            rotY += 0.002;
+            let finalRotY = rotY + (mouseX * 0.001);
+            let finalRotX = rotX + (mouseY * 0.001);
 
-            let processedPaths = [];
+            let actualMouseX = mouseX + (width / 2);
+            let actualMouseY = mouseY + (height / 2);
 
-            brainPaths.forEach(path => {
-                let projectedPoints = [];
-                let sumZ = 0;
+            let projectedCoords = new Array(numBrainPoints);
+            const processedPoints = [];
 
-                path.points.forEach(pt => {
-                    let rPt = rotatePoint(pt.x, pt.y, pt.z, finalRotX, finalRotY);
-                    let scale = focalLength / (focalLength + rPt.z + 200);
-                    let px = centerX + rPt.x * scale;
-                    let py = centerY + rPt.y * scale;
+            brainPoints.forEach(pt => {
+                let rot = rotatePoints(pt, finalRotX, finalRotY);
+                let scale = focalLength / (focalLength + rot.z + 210);
+                
+                if (scale > 0) {
+                    let projX = centerX + rot.x * scale;
+                    let projY = centerY + rot.y * scale;
                     
-                    projectedPoints.push({ x: px, y: py, scale: scale, zDepth: rPt.z });
-                    sumZ += rPt.z;
-                });
-
-                processedPaths.push({
-                    points: projectedPoints,
-                    avgZ: sumZ / path.points.length,
-                    type: path.type,
-                    hue: path.hue,
-                    pulsePhase: path.pulsePhase += path.pulseSpeed
-                });
+                    let pData = { 
+                        originalIndex: pt.originalIndex, 
+                        projX, projY, scale, zDepth: rot.z, 
+                        baseAlpha: pt.baseAlpha, size: pt.size 
+                    };
+                    processedPoints.push(pData);
+                    projectedCoords[pt.originalIndex] = pData; 
+                }
             });
 
-            // Volumetric back-to-front drawing
-            processedPaths.sort((a, b) => b.avgZ - a.avgZ);
+            processedPoints.sort((a, b) => b.zDepth - a.zDepth);
 
-            // Create a glowing, soft-focus aesthetic
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+            // Connectome Tract Matrix
+            ctx.lineWidth = 0.35;
+            processedPoints.forEach(pt => {
+                let nodeData = brainPoints[pt.originalIndex];
+                let structuralPulse = (Math.sin(timeStamp * 0.0025 + pt.originalIndex * 0.08) + 1) / 2;
+                let tractAlpha = 0.01 + (structuralPulse * 0.04) + (entropyLevel * 0.12); 
 
-            processedPaths.forEach(path => {
+                ctx.strokeStyle = `rgba(0, 255, 213, ${tractAlpha})`;
                 ctx.beginPath();
-                
-                for (let i = 0; i < path.points.length; i++) {
-                    let pt = path.points[i];
-                    if (i === 0) ctx.moveTo(pt.x, pt.y);
-                    else {
-                        // Smooth bezier approximation for artistic flowing lines
-                        let prev = path.points[i-1];
-                        let xc = (prev.x + pt.x) / 2;
-                        let yc = (prev.y + pt.y) / 2;
-                        ctx.quadraticCurveTo(prev.x, prev.y, xc, yc);
+                nodeData.connections.forEach(targetIdx => {
+                    let targetPt = projectedCoords[targetIdx];
+                    if (targetPt) {
+                        ctx.moveTo(pt.projX, pt.projY);
+                        ctx.lineTo(targetPt.projX, targetPt.projY);
                     }
-                }
-
-                let baseScale = path.points[0]?.scale || 1.0;
-                let depthAlpha = Math.min(Math.max((focalLength - path.avgZ) / (focalLength * 1.6), 0.03), 1.0);
-                
-                let ambientOscillation = (Math.sin(path.pulsePhase) + 1) / 2;
-                let finalAlpha = (path.type === 'cortex' ? 0.35 : 0.25) * depthAlpha * (0.6 + ambientOscillation * 0.4);
-                
-                // Color shifting based on phase and depth
-                let dynamicHue = path.hue + (ambientOscillation * 25) - (depthAlpha * 15);
-                
-                let midPt = path.points[Math.floor(path.points.length / 2)];
-                if (midPt) {
-                    let mdx = midPt.x - (mouseX + width / 2);
-                    let mdy = midPt.y - (mouseY + height / 2);
-                    let mDist = Math.sqrt(mdx*mdx + mdy*mdy);
-                    if (mDist < 160) {
-                        finalAlpha += (1.0 - (mDist / 160)) * 0.5;
-                        dynamicHue += 40; // Shift hue toward purple/pink when interacted with
-                    }
-                }
-
-                finalAlpha += (entropyLevel * 0.3);
-
-                ctx.lineWidth = (path.type === 'cortex' ? 2.5 : 1.5) * baseScale;
-                
-                // Add an ethereal glow effect 
-                ctx.shadowColor = `hsla(${dynamicHue}, 100%, 65%, ${finalAlpha * 0.8})`;
-                ctx.shadowBlur = 8 * baseScale;
-                
-                ctx.strokeStyle = `hsla(${dynamicHue}, 90%, 65%, ${Math.min(finalAlpha, 1.0)})`;
+                });
                 ctx.stroke();
             });
 
-            ctx.shadowBlur = 0; // Reset for performance
+            // Holographic Projection Synaptic Points
+            processedPoints.forEach(pt => {
+                let dx = pt.projX - actualMouseX;
+                let dy = pt.projY - actualMouseY;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                let alpha = pt.baseAlpha * pt.scale;
+                let ptSize = pt.size * pt.scale * 1.4;
+
+                if (distance < 150 && width > 768) {
+                    let proximityRatio = 1.0 - (distance / 150);
+                    alpha += proximityRatio * 0.5;
+                    ptSize *= (1.0 + proximityRatio * 0.65);
+
+                    ctx.beginPath();
+                    ctx.moveTo(pt.projX, pt.projY);
+                    ctx.lineTo(actualMouseX, actualMouseY);
+                    ctx.strokeStyle = `rgba(0, 255, 213, ${proximityRatio * 0.04})`;
+                    ctx.lineWidth = 0.4;
+                    ctx.stroke();
+                }
+
+                alpha += (entropyLevel * 0.2);
+
+                ctx.beginPath();
+                ctx.arc(pt.projX, pt.projY, ptSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 213, ${alpha})`;
+                ctx.fill();
+            });
 
             requestAnimationFrame(animate);
         }
 
-        // --- INTERACTIVITY HANDLERS ---
+        // --- Tracking & Dragging Interactivity ---
         const cursorGlow = document.getElementById('cursor-glow');
         
         document.addEventListener('mousedown', (e) => {
@@ -709,7 +793,7 @@
                 dragOffsetY = dy;
                 manualOverride = true; 
                 document.body.classList.add('grabbing');
-                mouseVelocity += 4.0;
+                mouseVelocity += 3.5;
             }
         });
 
@@ -719,8 +803,8 @@
 
             let instantaneousV = Math.sqrt(Math.pow(e.clientX - lastMouseX, 2) + Math.pow(e.clientY - lastMouseY, 2));
             if (instantaneousV > 2) {
-                mouseVelocity += instantaneousV * 0.08; 
-                if(mouseVelocity > 8.0) mouseVelocity = 8.0; 
+                mouseVelocity += instantaneousV * 0.06; 
+                if(mouseVelocity > 6.5) mouseVelocity = 6.5; 
             }
 
             if (isDragging) {
@@ -745,15 +829,20 @@
         document.addEventListener('mouseout', (e) => {
             if(e.relatedTarget === null) { 
                 cursorGlow.style.opacity = '0';
-                globalTargetMouseX = 0; globalTargetMouseY = 0;
+                globalTargetMouseX = 0;
+                globalTargetMouseY = 0;
                 isDragging = false;
                 document.body.classList.remove('grabbing');
             }
         });
 
-        document.addEventListener('mouseover', () => { cursorGlow.style.opacity = '1'; });
+        document.addEventListener('mouseover', () => {
+            cursorGlow.style.opacity = '1';
+        });
 
+        // --- Scroll Focus Effects ---
         const sections = document.querySelectorAll('.section-block');
+
         function updateFocus() {
             let minDistance = Infinity;
             let closestSection = null;
@@ -771,15 +860,19 @@
             });
 
             sections.forEach((section) => {
-                if (section === closestSection) section.classList.add('in-focus');
-                else section.classList.remove('in-focus');
+                if (section === closestSection) {
+                    section.classList.add('in-focus');
+                } else {
+                    section.classList.remove('in-focus');
+                }
             });
         }
 
         window.addEventListener('scroll', () => {
             requestAnimationFrame(updateFocus);
-            mouseVelocity += 0.8; 
+            mouseVelocity += 0.6; 
         });
+        
         window.addEventListener('resize', () => requestAnimationFrame(updateFocus));
 
         // Boot Sequence
