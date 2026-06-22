@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Armin Malekpour | Computer Vision Developer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --bg-color: #050505;
+            --bg-color: #020202;
             --text-main: #e0e0e0;
             --text-dim: #6b6b6b;
             --text-bright: #ffffff;
             --neon-accent: #00ffd5;
-            --section-hover-bg: rgba(255, 255, 255, 0.03);
+            --section-hover-bg: rgba(255, 255, 255, 0.02);
         }
 
         body {
@@ -25,11 +26,7 @@
             cursor: default;
         }
 
-        body.grabbing {
-            cursor: grabbing !important;
-        }
-
-        #neural-canvas {
+        #webgl-canvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -37,21 +34,6 @@
             height: 100vh;
             z-index: 0;
             pointer-events: none; 
-        }
-
-        #cursor-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(0, 255, 213, 0.04) 0%, rgba(0, 0, 0, 0) 55%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-            transition: opacity 0.3s ease;
-            opacity: 0;
         }
 
         .container {
@@ -65,7 +47,7 @@
         header {
             margin-bottom: 3rem;
             padding: 2rem;
-            border-bottom: 1px solid #222;
+            border-bottom: 1px solid #1a1a1a;
             text-align: center;
         }
 
@@ -80,7 +62,7 @@
             font-size: 1.2rem;
             margin: 0 0 1rem 0;
             color: var(--neon-accent);
-            text-shadow: 0 0 8px rgba(0, 255, 213, 0.4);
+            text-shadow: 0 0 15px rgba(0, 255, 213, 0.3);
             font-weight: 500;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -103,7 +85,6 @@
             border-radius: 50%;
             background: #222; 
             margin-right: 14px;
-            box-shadow: 0 0 0 rgba(0, 255, 213, 0);
             transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
@@ -146,15 +127,15 @@
         .section-block {
             margin-bottom: 2rem;
             padding: 2.5rem;
-            border-radius: 24px;
-            background: rgba(10, 10, 10, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            background: rgba(8, 8, 8, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
             
             opacity: 0.15;
             filter: blur(4px);
-            transform: scale(0.95) translateY(10px);
+            transform: scale(0.97) translateY(10px);
             
             transition: background 0.4s ease, box-shadow 0.4s ease, border 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
@@ -167,15 +148,15 @@
 
         .section-block:hover {
             background: var(--section-hover-bg);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(0, 255, 213, 0.1);
+            border: 1px solid rgba(0, 255, 213, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
         }
 
         .interactive-line {
             color: var(--text-dim);
             font-size: 1rem;
             margin-bottom: 0.8rem;
-            transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.2s ease;
+            transition: color 0.2s ease;
             display: block;
         }
 
@@ -185,7 +166,6 @@
 
         .interactive-line:hover {
             color: var(--text-bright);
-            text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
         }
 
         .job-title {
@@ -202,63 +182,36 @@
         }
 
         .skill-tag {
-            background: rgba(0, 255, 213, 0.02);
-            border: 1px solid rgba(0, 255, 213, 0.15);
+            background: rgba(0, 255, 213, 0.03);
+            border: 1px solid rgba(0, 255, 213, 0.2);
             color: var(--text-dim);
             padding: 0.5rem 1.2rem;
-            border-radius: 30px;
+            border-radius: 4px;
             font-size: 0.85rem;
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .skill-tag::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(45deg, rgba(0, 255, 213, 0.15), rgba(122, 0, 255, 0.15));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: all 0.3s ease;
         }
 
         .skill-tag:hover {
             color: var(--text-bright);
             border-color: var(--neon-accent);
-            box-shadow: 0 0 15px rgba(0, 255, 213, 0.2);
+            background: rgba(0, 255, 213, 0.08);
             transform: translateY(-2px);
         }
 
-        .skill-tag:hover::before {
-            opacity: 1;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #222;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--neon-accent);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-accent); }
     </style>
 </head>
 <body>
 
-    <canvas id="neural-canvas"></canvas>
-    <div id="cursor-glow"></div>
+    <div id="webgl-canvas"></div>
 
     <div class="container">
         <header class="section-block">
             <h1>Armin Malekpour</h1>
-            <h2>Computer Vision Developer</h2>
+            <h2>Computer Vision & Deep Learning Developer</h2>
             <div class="contact-links">
                 <a href="mailto:amp.malekpour@gmail.com" class="interactive-line">amp.malekpour@gmail.com</a>
                 <span class="interactive-line" style="display:inline;">|</span>
@@ -283,8 +236,6 @@
                 <li class="interactive-line">Improving ByteTracker by incorporating yaw direction and histogram, with no computational cost</li>
                 <li class="interactive-line">Design and development of a 3D data manipulation software using QT, VTK, Vespa, CGAL</li>
                 <li class="interactive-line">Design and development of a gaze tracking and segmentation tool leveraging GAZE-LLE and SAM to segment the gaze target</li>
-                <li class="interactive-line">Developing a framework to compare aerial radar and optical images of regions through SWIN based image transformers</li>
-                <li class="interactive-line">Developing of an automated image annotator for face data, for training deep learning model</li>
             </ul>
         </section>
 
@@ -298,7 +249,6 @@
 
         <section class="section-block">
             <h3>Research Experience</h3>
-             
             <h4>Independent Research</h4>
             <ul>
                 <li class="interactive-line">Exploring xAI effect on channel reduction efficiency in Deep Learning on motor imagery EEG</li>
@@ -306,22 +256,6 @@
                 <li class="interactive-line">EEG Functional and Effective connectivity analysis in time and frequency domain</li>
                 <li class="interactive-line">Proposing a statistical filter on feature maps of face images to prevent false recognition in ArcFace model</li>
                 <li class="interactive-line">Aligning Transformers' Gradient Saliency maps with ERD/ERS in Motor Imagery EEG</li>
-                <li class="interactive-line">Alignment of eye blinks derived from video, with EEG</li>
-            </ul>
-
-            <h4>Graduate Experience</h4>
-            <ul>
-                <li class="interactive-line">Simulation of Wireless Token Ring Protocol in Omnet++</li>
-                <li class="interactive-line">Link Duration Estimation Technique for WTRP</li>
-                <li class="interactive-line">MAC Protocols of Mobile Ad hoc Networks seminar</li>
-            </ul>
-
-            <h4>Undergraduate Experience</h4>
-            <ul>
-                <li class="interactive-line">Simulation of a 3d image reconstruction technique in MATLAB</li>
-                <li class="interactive-line">Simulation of an Edge Detection Algorithm for Flame Image Processing</li>
-                <li class="interactive-line">Edge Detection using Mamdani Fuzzy Model</li>
-                <li class="interactive-line">Neuro-Prosthetic Implants seminar presentation</li>
             </ul>
         </section>
 
@@ -366,437 +300,203 @@
                 <li class="interactive-line"><strong>English:</strong> C2 proficient (IELTS Academic 8.5)</li>
             </ul>
         </section>
-
-        <section class="section-block">
-            <h3>References / Contact Info</h3>
-            <ul>
-                <li class="interactive-line"><strong>Mrs. Parisa Kamani</strong>, CTO of Eyerik Intelligent Processing | p.kamani@eyerik.com</li>
-                <li class="interactive-line"><strong>Dr. Alireza Fallahi</strong>, Assistant Professor at Hamedan University of Technology | ali.r.fallahi@hut.ac.ir, ali.r.fallahi@gmail.com</li>
-            </ul>
-        </section>
-
     </div>
 
     <script>
-        let width, height;
-        let centerX, centerY;
-        let targetCenterX, targetCenterY; 
-        let mouseX = 0, mouseY = 0;
-        let globalTargetMouseX = 0, globalTargetMouseY = 0;
-        let lastMouseX = 0, lastMouseY = 0;
-        let mouseVelocity = 0;
-        let eegActivity = 1.0; 
+        // --- WebGL Setup via Three.js ---
+        const container = document.getElementById('webgl-canvas');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020202, 0.0035);
 
-        let isDragging = false;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        let manualOverride = false; 
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.z = 280;
+        camera.position.x = 120;
+        camera.position.y = 40;
+        camera.lookAt(0, 0, 0);
 
-        // --- Tractography Structure Variables ---
-        const brainPaths = [];
-        const numPaths = 75; // Number of continuous folding neural tracks
-        const pointsPerPath = 45; 
-        const focalLength = 650; 
-        let rotX = 0.2, rotY = -0.4; // Beautiful default three-quarter profile rotation
-        const visualBrainRadius = 240; 
-        const scanFieldRadius = 150; 
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
 
-        const numChannels = 8; 
-        const eegLines = [];
+        // --- Procedural Brain Mesh Generation ---
+        const particleCount = 45000; // High density to allow splat overlap
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
 
-        const neuralCanvas = document.getElementById('neural-canvas');
-        const ctx = neuralCanvas.getContext('2d');
+        const colorBase = new THREE.Color(0x00ffd5); // Neon Cyan
+        const colorDeep = new THREE.Color(0x004455); // Deep Teal
+        const colorStem = new THREE.Color(0x444444); // Dim Grey
 
-        function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            
-            targetCenterX = width * 0.73; 
-            targetCenterY = height * 0.5;
-            
-            if(width < 768) { 
-                targetCenterX = width * 0.5;
-                targetCenterY = height * 0.28;
-            }
+        for (let i = 0; i < particleCount; i++) {
+            let x, y, z;
+            let type = Math.random();
+            let i3 = i * 3;
 
-            if(!manualOverride) {
-                centerX = targetCenterX;
-                centerY = targetCenterY;
-            }
-
-            neuralCanvas.width = width;
-            neuralCanvas.height = height;
-            initEEG();
-        }
-        window.addEventListener('resize', resize);
-
-        // --- Generative Cortical Tractography Engine ---
-        function initBrainStructure() {
-            brainPaths.length = 0;
-
-            for (let p = 0; p < numPaths; p++) {
-                let pathPoints = [];
-                let type = 'cortex';
+            if (type < 0.85) {
+                // Cortex Generation
+                let theta = Math.random() * Math.PI * 2;
+                let phi = Math.acos((Math.random() * 2) - 1);
                 
-                let segmentChoice = Math.random();
-                if (segmentChoice > 0.82 && segmentChoice <= 0.94) type = 'cerebellum';
-                else if (segmentChoice > 0.94) type = 'stem';
-
-                // Establish seed location paths inside realistic anatomical envelopes
-                let seedTheta = Math.random() * Math.PI * 2;
-                let seedPhi = Math.acos((Math.random() * 2) - 1);
+                // Base anatomical bounds
+                let rx = 55, ry = 45, rz = 70;
                 
-                let rx = 135, ry = 105, rz = 165;
-                let hSign = Math.random() > 0.5 ? 1 : -1; // Hemisphere division flag
+                // Mathematical gyri/sulci folding via frequency modulation
+                let fold = Math.sin(theta * 12) * Math.cos(phi * 12) * 4.0;
+                let microFold = Math.sin(theta * 24 + phi * 24) * 1.5;
+                
+                let radiusOffset = fold + microFold;
+                
+                x = (rx + radiusOffset) * Math.sin(phi) * Math.cos(theta);
+                y = (ry + radiusOffset) * Math.sin(phi) * Math.sin(theta);
+                z = (rz + radiusOffset) * Math.cos(phi);
 
-                // Generate a continuous crawling path line
-                let cx = rx * Math.sin(seedPhi) * Math.cos(seedTheta);
-                let cy = ry * Math.sin(seedPhi) * Math.sin(seedTheta);
-                let cz = rz * Math.cos(seedPhi);
+                // Sagittal Fissure (Hemisphere split)
+                let side = Math.sign(x) || 1;
+                x = Math.abs(x);
+                if (x < 5) x = 2 + x * 0.1; // Deepen the cut
+                else x += 4;
+                x *= side;
 
-                if (type === 'cerebellum') {
-                    cx = (Math.random() * 35 + 15) * hSign;
-                    cy = Math.random() * 25 + 50;
-                    cz = -90 - Math.random() * 30;
-                } else if (type === 'stem') {
-                    cx = Math.random() * 10 - 5;
-                    cy = 50 + Math.random() * 80;
-                    cz = -30 - Math.random() * 15;
+                // Temporal lobe bulge
+                if (z > -10 && z < 30 && y > -10) {
+                    x *= 1.15;
+                    y += 5;
                 }
+                
+                // Frontal taper
+                if (z > 20) x *= (1.0 - (z - 20) * 0.005);
 
-                for (let i = 0; i < pointsPerPath; i++) {
-                    if (type === 'cortex') {
-                        // Advanced winding routing over realistic cortical geometry
-                        let angle = (i / pointsPerPath) * Math.PI * 6 + (p * 2); 
-                        
-                        // Enforce organic local looping parameters (The Gyri folding)
-                        let foldRadius = 18 + Math.sin(p * 5 + i * 0.4) * 8;
-                        let tx = cx + Math.sin(angle) * foldRadius;
-                        let ty = cy + Math.cos(angle * 1.3) * foldRadius;
-                        let tz = cz + Math.sin(angle * 0.7) * foldRadius;
+                // Color mapping based on depth/folds
+                let mixRatio = (radiusOffset + 5.5) / 11.0; 
+                let finalColor = colorDeep.clone().lerp(colorBase, mixRatio);
+                
+                // Add slight entropy
+                finalColor.r += (Math.random() - 0.5) * 0.1;
+                finalColor.g += (Math.random() - 0.5) * 0.1;
 
-                        // Warp raw path explicitly to the human brain shape model
-                        let distZ = tz / rz;
-                        let profileTaper = (tz > 0) ? (1.0 - distZ * 0.28) : (1.0 + Math.abs(distZ) * 0.1);
-                        
-                        // Natural temporal lobe undercut cavity mapping
-                        if (tz < -20 && ty > 10) {
-                            ty -= (Math.abs(tz) - 20) * 0.4;
-                        }
-                        // Temporal forward bulge projection
-                        if (tz > -10 && tz < 60 && ty > -5) {
-                            tx *= 1.18;
-                            ty += 8;
-                        }
+                colors[i3] = finalColor.r;
+                colors[i3+1] = finalColor.g;
+                colors[i3+2] = finalColor.b;
+                sizes[i] = Math.random() * 3.5 + 1.5; // Splat scale
 
-                        // Apply the global brain bounding box scale dimensions
-                        tx = rx * (tx / rx) * profileTaper;
-                        ty = ry * (ty / ry);
+            } else if (type < 0.95) {
+                // Cerebellum
+                let side = Math.random() > 0.5 ? 1 : -1;
+                let theta = Math.random() * Math.PI * 2;
+                let r = Math.random() * 18 + 5;
+                
+                x = (Math.cos(theta) * r * 0.8 + 15 * side);
+                y = Math.sin(theta) * 10 - 25;
+                z = -45 - Math.random() * 20;
 
-                        // Isolate hemispheres to clean up the medial longitudinal fissure gap
-                        let currentSide = Math.sign(tx) || hSign;
-                        tx = Math.abs(tx);
-                        if (tx < 12) tx = 4 + tx * 0.1;
-                        else tx += 12;
-                        tx *= currentSide;
+                // Folia layers
+                x *= (1.0 + Math.sin(y * 3) * 0.1);
+                
+                colors[i3] = 0.0;
+                colors[i3+1] = 0.6 + Math.random() * 0.4;
+                colors[i3+2] = 0.5 + Math.random() * 0.5;
+                sizes[i] = Math.random() * 2.0 + 1.0;
 
-                        pathPoints.push({ x: tx, y: ty, z: tz });
-                        
-                        // Progress the step generator forward across the organ shell
-                        cx += Math.sin(p + i * 0.05) * 5;
-                        cz += Math.cos(p * 2 + i * 0.1) * 4;
-
-                    } else if (type === 'cerebellum') {
-                        // Cerebellar tightly folded folia bands (Strict horizontal sweeping lines)
-                        let wave = (i / pointsPerPath) * Math.PI * 8;
-                        let tx = cx + Math.sin(wave) * 22;
-                        let ty = cy + (i * 0.5) + Math.cos(wave * 2) * 2;
-                        let tz = cz + Math.cos(wave) * 12;
-
-                        pathPoints.push({ x: tx, y: ty, z: tz });
-                    } else if (type === 'stem') {
-                        // Downward streaming structural fiber paths
-                        let progress = (i / pointsPerPath);
-                        let tx = cx + Math.sin(progress * Math.PI * 4 + p) * (2 * (1.0 - progress));
-                        let ty = cy + (progress * 55);
-                        let tz = cz + Math.cos(progress * Math.PI * 4 + p) * (2 * (1.0 - progress));
-
-                        pathPoints.push({ x: tx, y: ty, z: tz });
-                    }
-                }
-
-                brainPaths.push({
-                    points: pathPoints,
-                    type: type,
-                    pulsePhase: Math.random() * Math.PI * 2,
-                    pulseSpeed: 0.015 + Math.random() * 0.02
-                });
+            } else {
+                // Brain Stem
+                let rad = Math.random() * 6 + 2;
+                let angle = Math.random() * Math.PI * 2;
+                
+                x = Math.cos(angle) * rad;
+                z = -15 - Math.random() * 10;
+                y = -20 - Math.random() * 35;
+                
+                colors[i3] = colorStem.r;
+                colors[i3+1] = colorStem.g;
+                colors[i3+2] = colorStem.b;
+                sizes[i] = Math.random() * 1.5 + 0.5;
             }
+
+            positions[i3] = x;
+            positions[i3+1] = y;
+            positions[i3+2] = z;
         }
 
-        function initEEG() {
-            eegLines.length = 0;
-            const separation = height / (numChannels + 1);
-            for(let i = 0; i < numChannels; i++) {
-                eegLines.push({
-                    baseY: separation * (i + 1),
-                    phase: Math.random() * Math.PI * 2,
-                    frequency: 0.0035 + Math.random() * 0.003,
-                    amplitude: 5 + Math.random() * 6,
-                    chaosSeed: 0.5 + Math.random() * 1.5,
-                    chaosOffset: Math.random() * Math.PI * 2
-                });
-            }
-        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-        function rotatePoint(x, y, z, ax, ay) {
-            let cosY = Math.cos(ay), sinY = Math.sin(ay);
-            let x1 = x * cosY - z * sinY;
-            let z1 = x * sinY + z * cosY;
-
-            let cosX = Math.cos(ax), sinX = Math.sin(ax);
-            let y2 = y * cosX - z1 * sinX;
-            let z2 = y * sinX + z1 * cosX;
-
-            return { x: x1, y: y2, z: z2 };
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            let timeStamp = Date.now();
-
-            mouseX += (globalTargetMouseX - mouseX) * 0.06;
-            mouseY += (globalTargetMouseY - mouseY) * 0.06;
-
-            eegActivity += (mouseVelocity - eegActivity) * 0.05;
-            if (eegActivity < 1.0) eegActivity = 1.0;
-            mouseVelocity *= 0.93; 
-
-            let entropyLevel = Math.min((eegActivity - 1.0) / 4.5, 1.0); 
-            let curX = lastMouseX;
-            let curY = lastMouseY;
-
-            // --- RENDER EEG WAVE BACKGROUND ---
-            ctx.lineWidth = 1.0;
-            eegLines.forEach((line) => {
-                ctx.beginPath();
-                line.phase += 0.02 + (entropyLevel * 0.04);
-
-                for(let sx = 0; sx < width; sx += 4) {
-                    let baseNoise = Math.sin(sx * line.frequency + line.phase);
-                    let targetY = line.baseY + (baseNoise * line.amplitude);
-
-                    let dx = sx - curX;
-                    let dy = targetY - curY;
-                    let distToCursor = Math.sqrt(dx*dx + dy*dy);
-
-                    let currentAlpha = 0.012; 
+        // --- Custom Gaussian Splat Shader ---
+        // This simulates the mathematical projection of a splat by creating a smooth, 
+        // exponentially decaying alpha channel (Gaussian bell curve) on each vertex point.
+        const splatShaderMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0.0 }
+            },
+            vertexShader: `
+                attribute float size;
+                varying vec3 vColor;
+                uniform float time;
+                
+                void main() {
+                    vColor = color;
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                     
-                    if (distToCursor < scanFieldRadius) {
-                        let fieldWeight = 1.0 - (distToCursor / scanFieldRadius);
-                        let localizedEntropy = fieldWeight * (0.4 + entropyLevel * 0.6);
-
-                        let chaosFreq = Math.sin(sx * (0.05 * line.chaosSeed + localizedEntropy * 0.3) + line.phase * (3 + localizedEntropy * 5) + line.chaosOffset) * Math.cos(sx * 0.02 * line.chaosSeed);
-                        targetY += chaosFreq * (45 * localizedEntropy);
-                        
-                        let updatedDy = targetY - curY;
-                        let updatedDist = Math.sqrt(dx*dx + updatedDy*updatedDy);
-                        
-                        if (updatedDist < scanFieldRadius) {
-                            currentAlpha = 0.012 + ((1.0 - (updatedDist / scanFieldRadius)) * 0.55); 
-                        }
-                    }
-
-                    if(sx === 0) ctx.moveTo(sx, targetY);
-                    else {
-                        ctx.lineTo(sx, targetY);
-                        ctx.strokeStyle = `rgba(0, 255, 213, ${currentAlpha})`;
-                        ctx.stroke();
-                        ctx.beginPath();
-                        ctx.moveTo(sx, targetY);
-                    }
-                }
-            });
-
-            // --- SCANNING GLOW RING ---
-            ctx.beginPath();
-            ctx.arc(curX, curY, scanFieldRadius, 0, Math.PI * 2);
-            let circleGradient = ctx.createRadialGradient(curX, curY, scanFieldRadius - 15, curX, curY, scanFieldRadius);
-            circleGradient.addColorStop(0, 'rgba(0, 255, 213, 0)');
-            circleGradient.addColorStop(0.6, `rgba(0, 255, 213, ${0.03 + entropyLevel * 0.05})`);
-            circleGradient.addColorStop(1, 'rgba(0, 255, 213, 0)');
-            ctx.strokeStyle = circleGradient;
-            ctx.lineWidth = 2.0;
-            ctx.stroke();
-
-            // --- UI DODGING PHYSICS ---
-            if (!isDragging) {
-                let repelX = 0, repelY = 0;
-                const sections = document.querySelectorAll('.section-block');
-                
-                sections.forEach(sec => {
-                    let rect = sec.getBoundingClientRect();
-                    if(rect.bottom > 0 && rect.top < height) {
-                        if (targetCenterX > (rect.left - 30) - visualBrainRadius &&
-                            targetCenterX < (rect.right + 30) + visualBrainRadius &&
-                            targetCenterY > (rect.top - 30) - visualBrainRadius &&
-                            targetCenterY < (rect.bottom + 30) + visualBrainRadius) {
-                            
-                            let dx = targetCenterX - (rect.left + rect.width / 2);
-                            let dy = targetCenterY - (rect.top + rect.height / 2);
-                            let dist = Math.sqrt(dx*dx + dy*dy) || 1;
-                            repelX += (dx / dist) * 16; 
-                            repelY += (dy / dist) * 6; 
-                        }
-                    }
-                });
-
-                if (repelX !== 0 || repelY !== 0) {
-                    targetCenterX += repelX; targetCenterY += repelY;
-                } else if (!manualOverride) {
-                    targetCenterX += ((width > 768 ? width * 0.73 : width * 0.5) - targetCenterX) * 0.02;
-                    targetCenterY += ((height * 0.5) - targetCenterY) * 0.02;
-                }
-                targetCenterX = Math.max(visualBrainRadius - 50, Math.min(width - (visualBrainRadius - 50), targetCenterX));
-                targetCenterY = Math.max(visualBrainRadius - 50, Math.min(height - (visualBrainRadius - 50), targetCenterY));
-            }
-
-            centerX += (targetCenterX - centerX) * 0.08;
-            centerY += (targetCenterY - centerY) * 0.08;
-
-            // --- RENDER TRACTOGRAPHY BRAIN MAP ---
-            rotY += 0.0015; // Slow baseline systemic spin
-            let finalRotY = rotY + (mouseX * 0.0008);
-            let finalRotX = rotX + (mouseY * 0.0008);
-
-            let processedPaths = [];
-
-            // Project 3D coordinates to 2D plane with depth sorting metrics
-            brainPaths.forEach(path => {
-                let projectedPoints = [];
-                let sumZ = 0;
-
-                path.points.forEach(pt => {
-                    let rPt = rotatePoint(pt.x, pt.y, pt.z, finalRotX, finalRotY);
-                    let scale = focalLength / (focalLength + rPt.z + 200);
-                    let px = centerX + rPt.x * scale;
-                    let py = centerY + rPt.y * scale;
+                    // Subtle breathing effect for neuro-grounding vibe
+                    float pulse = sin(time * 2.0 + position.y * 0.1) * 0.1 + 0.9;
                     
-                    projectedPoints.push({ x: px, y: py, scale: scale, zDepth: rPt.z });
-                    sumZ += rPt.z;
-                });
-
-                processedPaths.push({
-                    points: projectedPoints,
-                    avgZ: sumZ / path.points.length,
-                    type: path.type,
-                    pulsePhase: path.pulsePhase += path.pulseSpeed
-                });
-            });
-
-            // Render back-to-front sorting for perfect volumetric rendering
-            processedPaths.sort((a, b) => b.avgZ - a.avgZ);
-
-            ctx.shadowBlur = 0; // Reset canvas shadows for performance optimization
-            processedPaths.forEach(path => {
-                ctx.beginPath();
-                
-                // Draw paths smoothly using the projected points sequence
-                for (let i = 0; i < path.points.length; i++) {
-                    let pt = path.points[i];
-                    if (i === 0) ctx.moveTo(pt.x, pt.y);
-                    else ctx.lineTo(pt.x, pt.y);
+                    // Perspective scaling for billboarding
+                    gl_PointSize = size * pulse * (200.0 / -mvPosition.z);
+                    gl_Position = projectionMatrix * mvPosition;
                 }
-
-                // Dynamic luminance metrics matching DTI tracking scans
-                let baseScale = path.points[0]?.scale || 1.0;
-                let depthAlpha = Math.min(Math.max((focalLength - path.avgZ) / (focalLength * 1.5), 0.05), 1.0);
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
                 
-                let ambientOscillation = (Math.sin(path.pulsePhase) + 1) / 2;
-                let finalAlpha = (path.type === 'cortex' ? 0.22 : 0.15) * depthAlpha * (0.7 + ambientOscillation * 0.3);
-                
-                // Mouse interaction overlay flash lighting up nearby fiber lines
-                let midPt = path.points[Math.floor(path.points.length / 2)];
-                if (midPt) {
-                    let mdx = midPt.x - (mouseX + width / 2);
-                    let mdy = midPt.y - (mouseY + height / 2);
-                    let mDist = Math.sqrt(mdx*mdx + mdy*mdy);
-                    if (mDist < 140) {
-                        finalAlpha += (1.0 - (mDist / 140)) * 0.45;
-                    }
+                void main() {
+                    // Calculate distance from center of the point sprite
+                    vec2 coord = gl_PointCoord - vec2(0.5);
+                    float distSquared = dot(coord, coord);
+                    
+                    // Mathematical Gaussian distribution: f(x) = exp(-x^2 / 2*sigma^2)
+                    // We use 16.0 to control the tight falloff of the splat
+                    float gaussianAlpha = exp(-distSquared * 16.0);
+                    
+                    // Discard corners to optimize rendering
+                    if (gaussianAlpha < 0.02) discard;
+                    
+                    gl_FragColor = vec4(vColor, gaussianAlpha * 0.85);
                 }
-
-                finalAlpha += (entropyLevel * 0.25); // Scaling brightness with background chaos levels
-
-                ctx.lineWidth = (path.type === 'cortex' ? 1.4 : 1.0) * baseScale;
-                ctx.strokeStyle = `rgba(0, 255, 213, ${Math.min(finalAlpha, 0.95)})`;
-                ctx.stroke();
-            });
-
-            requestAnimationFrame(animate);
-        }
-
-        // --- INTERACTIVITY HANDLERS ---
-        const cursorGlow = document.getElementById('cursor-glow');
-        
-        document.addEventListener('mousedown', (e) => {
-            if (e.target.tagName.toLowerCase() === 'a') return;
-
-            let dx = e.clientX - centerX;
-            let dy = e.clientY - centerY;
-            
-            if (Math.sqrt(dx*dx + dy*dy) < visualBrainRadius) {
-                isDragging = true;
-                dragOffsetX = dx;
-                dragOffsetY = dy;
-                manualOverride = true; 
-                document.body.classList.add('grabbing');
-                mouseVelocity += 3.5;
-            }
+            `,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false, // Prevents splats from occlusion sorting issues
         });
 
-        document.addEventListener('mousemove', (e) => {
-            globalTargetMouseX = e.clientX - (width / 2);
-            globalTargetMouseY = e.clientY - (height / 2);
+        const brainMesh = new THREE.Points(geometry, splatShaderMaterial);
+        scene.add(brainMesh);
 
-            let instantaneousV = Math.sqrt(Math.pow(e.clientX - lastMouseX, 2) + Math.pow(e.clientY - lastMouseY, 2));
-            if (instantaneousV > 2) {
-                mouseVelocity += instantaneousV * 0.06; 
-                if(mouseVelocity > 6.5) mouseVelocity = 6.5; 
-            }
+        // --- Interactive Mouse Mechanics ---
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
 
-            if (isDragging) {
-                targetCenterX = e.clientX - dragOffsetX;
-                targetCenterY = e.clientY - dragOffsetY;
-            }
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
 
-            lastMouseX = e.clientX;
-            lastMouseY = e.clientY;
-
-            requestAnimationFrame(() => {
-                cursorGlow.style.left = e.clientX + 'px';
-                cursorGlow.style.top = e.clientY + 'px';
-            });
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX) * 0.001;
+            mouseY = (event.clientY - windowHalfY) * 0.001;
         });
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            document.body.classList.remove('grabbing');
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        document.addEventListener('mouseout', (e) => {
-            if(e.relatedTarget === null) { 
-                cursorGlow.style.opacity = '0';
-                globalTargetMouseX = 0; globalTargetMouseY = 0;
-                isDragging = false;
-                document.body.classList.remove('grabbing');
-            }
-        });
-
-        document.addEventListener('mouseover', () => { cursorGlow.style.opacity = '1'; });
-
+        // --- UI Scroll Focus ---
         const sections = document.querySelectorAll('.section-block');
-        function updateFocus() {
+        window.addEventListener('scroll', () => {
             let minDistance = Infinity;
             let closestSection = null;
             const viewportCenter = window.innerHeight / 2;
@@ -805,29 +505,44 @@
                 const rect = section.getBoundingClientRect();
                 const sectionCenter = rect.top + (rect.height / 2);
                 const distance = Math.abs(viewportCenter - sectionCenter);
-
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestSection = section;
                 }
             });
 
-            sections.forEach((section) => {
-                if (section === closestSection) section.classList.add('in-focus');
-                else section.classList.remove('in-focus');
-            });
+            sections.forEach(sec => sec.classList.toggle('in-focus', sec === closestSection));
+            
+            // Adjust brain vertical position based on scroll to dodge text
+            targetY = -(window.scrollY * 0.02);
+        });
+
+        // Init focus
+        sections[0]?.classList.add('in-focus');
+
+        const clock = new THREE.Clock();
+
+        // --- Render Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+            splatShaderMaterial.uniforms.time.value = elapsedTime;
+
+            // Smooth rotation interpolation
+            targetX = mouseX * 0.5;
+            brainMesh.rotation.y += (targetX - brainMesh.rotation.y) * 0.05;
+            brainMesh.rotation.x += (mouseY * 0.5 - brainMesh.rotation.x) * 0.05;
+            
+            // Auto-spin base
+            brainMesh.rotation.y += 0.002;
+            
+            // Smooth vertical translation
+            brainMesh.position.y += (targetY - brainMesh.position.y) * 0.05;
+
+            renderer.render(scene, camera);
         }
 
-        window.addEventListener('scroll', () => {
-            requestAnimationFrame(updateFocus);
-            mouseVelocity += 0.6; 
-        });
-        window.addEventListener('resize', () => requestAnimationFrame(updateFocus));
-
-        // Boot Sequence
-        resize();
-        initBrainStructure();
-        updateFocus();
         animate();
     </script>
 </body>
